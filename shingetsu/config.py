@@ -158,9 +158,9 @@ client_timeout = 30*60      # Seconds; client_timeout < sync_cycle
 tk_save_warn = 5*60         # Seconds
 retry = 5                   # Times; Common setting
 retry_join = 2              # Times; Join network
-nodes = 5                   # Nodes keeping in node list
-share_nodes = 5             # Nodes having the file
-search_depth = 30           # Search node size
+nodes = 256                 # Nodes keeping in node list
+share_nodes = 256           # Nodes having the file
+search_depth = 256          # Search node size
 tiedfile_cache_size = 30
 
 broadcast = "../tool/broadcast.py"  # Broadcast script path
