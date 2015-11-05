@@ -207,7 +207,7 @@ save_cookie = 7*24*60*60                # Seconds
 title_limit = 30                        # Charactors
 
 # asis, md5, sha1, sha224, sha256, sha384, or sha512
-cache_hash_method = 'asis'
+cache_hash_method = 'sha512'
 
 version = _get_version()
 
