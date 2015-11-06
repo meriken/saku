@@ -195,6 +195,7 @@ read_status = run_dir + '/readstatus.txt'
 server = root_path + "server.cgi"
 client = root_path + "client.cgi"
 gateway = root_path + "gateway.cgi"
+mobile_gateway = root_path + "m.cgi"
 thread_cgi = root_path + "thread.cgi"
 admin_cgi = root_path + "admin.cgi"
 xsl = root_path + "rss1.xsl"
@@ -207,7 +208,7 @@ save_cookie = 7*24*60*60                # Seconds
 title_limit = 30                        # Charactors
 
 # asis, md5, sha1, sha224, sha256, sha384, or sha512
-cache_hash_method = 'sha512'
+cache_hash_method = 'asis'
 
 version = _get_version()
 

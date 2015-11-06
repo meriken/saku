@@ -37,12 +37,14 @@ import socketserver
 from threading import RLock
 
 from . import config
-from . import admin_cgi, server_cgi, gateway_cgi, thread_cgi
+from . import admin_cgi, server_cgi, gateway_cgi, mobile_gateway_cgi, thread_cgi, mobile_thread_cgi
 
 cgimodule = {"admin.cgi": admin_cgi,
              "server.cgi": server_cgi,
              "gateway.cgi": gateway_cgi,
-             "thread.cgi": thread_cgi}
+             "m.cgi": mobile_gateway_cgi,
+             "thread.cgi": thread_cgi,
+             "mobile_thread.cgi": mobile_thread_cgi}
 
 
 class ConnectionCounter:
