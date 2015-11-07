@@ -42,7 +42,7 @@ from .util import opentext
 
 class CGI(mobile_gateway.CGI):
 
-    """Class for /m."""
+    """Class for /m.cgi."""
 
     def run(self):
         path = self.path_info()
@@ -96,7 +96,7 @@ class CGI(mobile_gateway.CGI):
             self.jump_new_file()
         elif path.startswith("csv"):
             self.print_csv(path)
-        elif re.search(r"^(thread)", path):
+        elif re.search(r"^(thread)", path) and not re.search(r"^threads\.html$", path):
             m = re.search(r"^(thread)/?([^/]*)$", path)
             if m is None:
                 self.print_title()
@@ -112,6 +112,12 @@ class CGI(mobile_gateway.CGI):
                 return
 
             self.print302(uri)
+        elif path == 'home.html':
+            self.print_home()
+        elif path == 'sidebar.html':
+            self.print_sidebar()
+        elif path == 'threads.html':
+            self.print_threads()
         elif path == '':
             self.print_title()
         else:
@@ -126,7 +132,7 @@ class CGI(mobile_gateway.CGI):
         for cache in cachelist:
             if now <= cache.valid_stamp + config.top_recent_range:
                 output_cachelist.append(cache)
-        self.header(message['logo'] + ' - ' + message['description'])
+        #self.header(message['logo'] + ' - ' + message['description'])
         var = {
             'cachelist': output_cachelist,
             'target': 'changes',
@@ -135,10 +141,54 @@ class CGI(mobile_gateway.CGI):
             'mch_categories': self.mch_categories()
         }
 
-        self.stdout.write(self.template('top', var))
-        self.print_new_element_form()
-        self.footer()
+        self.stdout.write(self.template('mobile_top', var))
+        #self.print_new_element_form()
+        #self.footer()
 
+    def print_sidebar(self):
+        var = { 'logo': self.message['logo'] }
+        self.stdout.write(self.template('mobile_sidebar', var))
+
+    def print_home(self):
+        message = self.message
+        cachelist = CacheList()
+        cachelist.sort(key=lambda x: x.valid_stamp, reverse=True)
+        now = int(time())
+        output_cachelist = []
+        for cache in cachelist:
+            if now <= cache.valid_stamp + config.top_recent_range:
+                output_cachelist.append(cache)
+        #self.header(message['logo'] + ' - ' + message['description'])
+        var = {
+            'cachelist': output_cachelist,
+            'target': 'changes',
+            'taglist': UserTagList(),
+            'mch_url': self.mch_url(),
+            'mch_categories': self.mch_categories()
+        }
+
+        self.stdout.write(self.template('mobile_home', var))
+        #self.print_new_element_form()
+        #self.footer()
+
+    def print_threads(self):
+        if self.str_filter:
+            title = '%s : %s' % (self.message['changes'], self.str_filter)
+        else:
+            title = self.message['changes']
+        cachelist = CacheList()
+        cachelist.sort(key=lambda x: x.valid_stamp, reverse=True)
+        var = {
+            'target': 'changes',
+            'type': 'thread',
+            'filter': self.str_filter,
+            'tag': self.str_tag,
+            'taglist': UserTagList(),
+            'cachelist': cachelist,
+            'search_new_file': False,
+        }
+        self.stdout.write(self.template('mobile_threads', var))
+            
     def print_index(self):
         """Print index page."""
         if self.str_filter:
