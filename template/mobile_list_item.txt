@@ -40,7 +40,7 @@
 
 
 
-<a href="#" class="list-group-item">
-  <span ngNonBindable>{{title}}</span> {# <small>{{localtime(cache.valid_stamp)}}</small> #}
-  <i class="fa fa-chevron-right pull-right"></i>
+<a href="{{mobile_gateway_cgi}}/thread/{{title}}" class="list-group-item">
+  {{title}} ({{cache.__len__()}}){# <small>{{localtime(cache.valid_stamp)}}</small> #}
+  <span class="glyphicon glyphicon-chevron-right pull-right"></span>
 </a>

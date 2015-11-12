@@ -42,7 +42,7 @@ from . import admin_cgi, server_cgi, gateway_cgi, mobile_gateway_cgi, thread_cgi
 cgimodule = {"admin.cgi": admin_cgi,
              "server.cgi": server_cgi,
              "gateway.cgi": gateway_cgi,
-             "m.cgi": mobile_gateway_cgi,
+             "mobile.cgi": mobile_gateway_cgi,
              "thread.cgi": thread_cgi,
              "mobile_thread.cgi": mobile_thread_cgi}
 

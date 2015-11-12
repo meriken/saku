@@ -146,7 +146,7 @@ force_thumbnail = _get_value(_extconf,
 
 client_cycle = 5*60         # Seconds; Access client.cgi
 ping_cycle = 5*60           # Seconds; Check nodes
-sync_cycle = 5*60*60        # Seconds; Check cache
+sync_cycle = 60 * 60 # 5*60*60        # Seconds; Check cache
 init_cycle = 20*60          # Seconds; Check initial node
 update_range = 24*60*60     # Seconds
 wait_update = 10            # Seconds
@@ -195,7 +195,7 @@ read_status = run_dir + '/readstatus.txt'
 server = root_path + "server.cgi"
 client = root_path + "client.cgi"
 gateway = root_path + "gateway.cgi"
-mobile_gateway = root_path + "m.cgi"
+mobile_gateway = root_path + "mobile.cgi"
 thread_cgi = root_path + "thread.cgi"
 admin_cgi = root_path + "admin.cgi"
 xsl = root_path + "rss1.xsl"

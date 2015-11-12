@@ -14,8 +14,7 @@ var app = angular.module('MobileAngularUiExamples', [
   // opening sidebars, turning switches on/off ..
   'mobile-angular-ui.gestures'
 ]);
-
-app.run(function($transform) {
+app.run(function ($transform) {
   window.$transform = $transform;
 });
 
@@ -25,19 +24,10 @@ app.run(function($transform) {
 // in order to avoid unwanted routing.
 // 
 app.config(function($routeProvider) {
-  $routeProvider.when('/',              {templateUrl: '/m.cgi/home.html', reloadOnSearch: false});
-  $routeProvider.when('/threads',       {templateUrl: '/m.cgi/threads.html', reloadOnSearch: false });
-  $routeProvider.when('/toggle',        {templateUrl: 'toggle.html', reloadOnSearch: false}); 
-  $routeProvider.when('/tabs',          {templateUrl: 'tabs.html', reloadOnSearch: false}); 
-  $routeProvider.when('/accordion',     {templateUrl: 'accordion.html', reloadOnSearch: false}); 
-  $routeProvider.when('/overlay',       {templateUrl: 'overlay.html', reloadOnSearch: false}); 
-  $routeProvider.when('/forms',         {templateUrl: 'forms.html', reloadOnSearch: false});
-  $routeProvider.when('/dropdown',      {templateUrl: 'dropdown.html', reloadOnSearch: false});
-  $routeProvider.when('/touch',         {templateUrl: 'touch.html', reloadOnSearch: false});
-  $routeProvider.when('/swipe',         {templateUrl: 'swipe.html', reloadOnSearch: false});
-  $routeProvider.when('/drag',          {templateUrl: 'drag.html', reloadOnSearch: false});
-  $routeProvider.when('/drag2',         {templateUrl: 'drag2.html', reloadOnSearch: false});
-  $routeProvider.when('/carousel',      {templateUrl: 'carousel.html', reloadOnSearch: false});
+  $routeProvider.when('/',              {templateUrl: '/m.cgi/home', reloadOnSearch: false});
+  $routeProvider.when('/threads',       { templateUrl: '/m.cgi/threads', reloadOnSearch: false });
+  $routeProvider.when('/thread/:title',       { templateUrl: function (params) { return '/m.cgi/thread/' + params.title; }, reloadOnSearch: false });
+  $routeProvider.when('/thread/:title/:specifier', { templateUrl: function (params) { return '/m.cgi/thread/' + params.title + '/' + params.specifier; }, reloadOnSearch: false });
 });
 
 // 
@@ -291,7 +281,8 @@ app.controller('MainController', function($rootScope, $scope){
 
   // 
   // Right Sidebar
-  // 
+    // 
+    /*
   $scope.chatUsers = [
     { name: 'Carlos  Flowers', online: true },
     { name: 'Byron Taylor', online: true },
@@ -319,6 +310,7 @@ app.controller('MainController', function($rootScope, $scope){
     { name: 'Lee Norman', online: false },
     { name: 'Ebony Rice', online: false }
   ];
+  */
 
   //
   // 'Forms' screen
@@ -345,4 +337,14 @@ app.controller('MainController', function($rootScope, $scope){
       $scope.notices.splice(index, 1);
     }
   };
+});
+
+//
+//
+//
+
+app.run(function ($rootScope, $templateCache) {
+    $rootScope.$on('$viewContentLoaded', function () {
+        $templateCache.removeAll();
+    });
 });

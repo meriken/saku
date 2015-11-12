@@ -1,0 +1,21 @@
+<h2 style="">{{path}}</h2>
+<div class="dropdown" style="margin-bottom:10px;">
+	<button class='btn btn-default dropdown-toggle' type='button' data-toggle='dropdown' style='border-radius:4px;'>
+		{% if page == 0 %}最新ページ{% else %}{{page}}ページ前{% endif %}(全{{num_pages}}ページ)
+		<span class="caret"></span>
+	</button>
+	<ul class="dropdown-menu">
+		{% for n in range(0,num_pages) %}
+		<li>{% if n == 0 %}<a href="/m.cgi/thread/{{path}}">最新ページ{% else %}<a href="/m.cgi/thread/{{path}}/p{{n}}">{{n}}ページ前{% endif %}</a></li>
+		{% endfor %}
+	</ul>		
+</div>
+
+<div style="margin-bottom:10px;">
+<div class="btn-group" style="block:inline;" style="margin-bottom:10px;">
+	{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="/m.cgi/thread/{{path}}/p0"                {% endif %}><span class="glyphicon glyphicon-backward"></span></a>
+	{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="/m.cgi/thread/{{path}}/p{{page - 1}}"     {% endif %}><span class="glyphicon glyphicon-triangle-left"></span> 次ページ</a>
+	{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="/m.cgi/thread/{{path}}/p{{page + 1}}"     {% endif %}>前ページ <span class="glyphicon glyphicon-triangle-right"></span></a>
+	{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="/m.cgi/thread/{{path}}/p{{num_pages - 1}}"{% endif %}><span class="glyphicon glyphicon-forward"></span></a>
+</div>
+</div>
