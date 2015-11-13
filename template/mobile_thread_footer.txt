@@ -5,16 +5,145 @@
 	</button>
 	<ul class="dropdown-menu">
 		{% for n in range(0,num_pages) %}
-		<li>{% if n == 0 %}<a href="/m.cgi/thread/{{path}}">最新ページ{% else %}<a href="/m.cgi/thread/{{path}}/p{{n}}">{{n}}ページ前{% endif %}</a></li>
+		<li>{% if n == 0 %}<a href="{{mobile_gateway_cgi}}/thread/{{path}}">最新ページ{% else %}<a href="{{mobile_gateway_cgi}}/thread/{{path}}/p{{n}}">{{n}}ページ前{% endif %}</a></li>
 		{% endfor %}
 	</ul>		
 </div>
 
 <div style="margin-bottom:10px;">
-<div class="btn-group" style="block:inline;" style="margin-bottom:10px;">
-	{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="/m.cgi/thread/{{path}}/p0"                {% endif %}><span class="glyphicon glyphicon-backward"></span></a>
-	{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="/m.cgi/thread/{{path}}/p{{page - 1}}"     {% endif %}><span class="glyphicon glyphicon-triangle-left"></span> 次ページ</a>
-	{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="/m.cgi/thread/{{path}}/p{{page + 1}}"     {% endif %}>前ページ <span class="glyphicon glyphicon-triangle-right"></span></a>
-	{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="/m.cgi/thread/{{path}}/p{{num_pages - 1}}"{% endif %}><span class="glyphicon glyphicon-forward"></span></a>
+	<div class="btn-group" style="block:inline;" style="margin-bottom:10px;">
+		{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path}}/p0"                {% endif %}><span class="glyphicon glyphicon-backward"></span></a>
+		{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path}}/p{{page - 1}}"     {% endif %}><span class="glyphicon glyphicon-triangle-left"></span> 次ページ</a>
+		{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path}}/p{{page + 1}}"     {% endif %}>前ページ <span class="glyphicon glyphicon-triangle-right"></span></a>
+		{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path}}/p{{num_pages - 1}}"{% endif %}><span class="glyphicon glyphicon-forward"></span></a>
+	</div>
 </div>
-</div>
+
+{#
+{% if isadmin %}
+  {% if cache %}
+    <p><input type="submit" value="{{message.del_record}}" class="btn" /></p>
+  {% endif %}
+  </form>
+{% endif %}
+#}
+
+<style>
+	.input-wrapper {
+		border: 1px solid lightgrey;
+		border-radius: 4px;
+		display: block;
+		margin-bottom: 10px;
+	}
+	.wrapped-input {
+		border-radius: 0 0;
+		border-top: none;
+		border-left: none;
+		border-right: none;
+		border-bottom: 1px solid lightgrey;
+	}
+	.wrapped-input:last-child {
+		border-bottom: none;
+	}
+	.no-border {
+		border: none;
+		border-radius: 0;
+		box-shadow: none;
+	}
+	.btn-file {
+		position: relative;
+		overflow: hidden;
+		text-align: left;
+		color: gray;
+	}
+	.btn-file input[type=file] {
+		position: absolute;
+		top: 0;
+		right: 0;
+		min-width: 100%;
+		min-height: 100%;
+		font-size: 100px;
+		text-align: right;
+		filter: alpha(opacity=0);
+		opacity: 0;
+		outline: none;
+		background: white;
+		cursor: inherit;
+		display: block;
+	}
+</style>
+
+<form id="postarticle" name="postarticle" method="post" action="{{mobile_gateway_cgi}}" enctype="multipart/form-data" role="form">
+	<div>
+		<input type="hidden" name="cmd" value="post" />
+		<input type="hidden" name="file" value="{{cache.datfile}}" />
+
+		<div class="input-wrapper">
+			<div class="wrapped-input input-group">
+				<span class="no-border input-group-addon" style="border-radius: 4px 0 0 0"><span class="glyphicon glyphicon-user"></span></span>
+				<input style="border-radius: 0 4px 0 0" name="name" value="" id="name" class="no-border form-control" placeholder="{{message.name}}" />
+			</div>
+			<div class="wrapped-input input-group">
+				<span class="no-border input-group-addon"><span class="glyphicon glyphicon-envelope"></span></span>
+				<input name="mail" value="" id="mail" class="no-border form-control" placeholder="{{message.mail}}" />
+			</div>
+			{% if isadmin %}
+				<div class="wrapped-input input-group">
+					<span class="no-border input-group-addon"><span class="glyphicon glyphicon-pencil"></span></span>
+					<input type="password" name="passwd" value="" id="passwd" class="no-border form-control" placeholder="{{message.signature}}"/>
+				</div>
+			{% endif %}
+			<div class="wrapped-input input-group">
+				<span class="no-border input-group-addon"><span class="glyphicon glyphicon-file"></span></span>
+					<span class="no-border btn btn-block btn-default btn-file">
+						添付ファイル<input type="file" multiple="" name="attach" id="attach">
+					</span>
+			</div>
+			<textarea rows="5" name="body" id="body" class="no-border wrapped-input form-control" placeholder="{{message.post_body}}"></textarea>
+			<div class="form-actions">
+				<button class="btn btn-block btn-primary wrapped-input no-border" style="border-radius: 0 0 4px 4px;">
+					{{message.post}}
+				</button>
+			</div>
+		</div>
+		<div class="help-block"><a href="{{mobile_gateway_cgi}}/motd" target="_blank">{{message.agreement}}</a></div>
+
+		<input type="hidden" name="suffix" value="AUTO" />
+		<input type="hidden" name="dopost" value="dopost" />
+		<input type="hidden" name="error"  value="" />
+
+		{#
+			<div class="form-group">
+			<label class="control-label" for="attach">{{message.attach}}</label>
+				<input type="file" name="attach" size="19" value="" id="attach" class="input-file" />
+				<div class="help-inline">{{message.limit}}: {{limit}}{{message.kb}}</div>
+			</div>
+
+			<div class="form-group post-advanced">
+			<label class="control-label" for="suffix">{{message.suffix}}</label>
+				<select name="suffix" size="1" id="suffix">
+				<option>AUTO</option>
+				{% for suffix in suffixes %}
+					<option>{{suffix}}</option>
+				{% endfor %}
+				</select>
+			</div>
+
+			<div class="form-group post-advanced">
+			<label class="checkbox-inline">
+				<input type="checkbox" id="dopost" name="dopost" value="dopost" checked="checked" />
+				<div class="help-inline">{{message.desc_send}}</div>
+				{{message.send}}
+			</label>
+			</div>
+			<div class="form-group post-advanced">
+			<label class="checkbox-inline">
+				<input type="checkbox" id="error" name="error" value="error"/>
+				<div class="help-inline">{{message.desc_error}}</div>
+				{{message.error}}
+			</label>
+			</div>
+		#}
+
+	</div>
+</form>

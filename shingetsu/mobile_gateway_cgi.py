@@ -285,6 +285,8 @@ class CGI(mobile_gateway.CGI):
         #self.stdout.write("</dl>\n")
         escaped_path = cgi.escape(path)
         escaped_path = re.sub(r'  ', '&nbsp;&nbsp;', escaped_path)
+        suffixes = list(mimetypes.types_map.keys())
+        suffixes.sort()
         var = {
             'path': path,
             'str_path': str_path,
@@ -293,9 +295,10 @@ class CGI(mobile_gateway.CGI):
             'res_anchor': self.res_anchor,
             'page': page,
             'num_pages': num_pages,
+            'suffixes': suffixes,
+            'limit': config.record_limit * 3 // 4,
         }
         #self.stdout.write(self.template('thread_bottom', var))
-        self.print_post_form(cache)
         self.stdout.write(self.template('mobile_thread_footer', var))
         self.stdout.write(self.template('mobile_footer', var))
         #if len(cache):
@@ -397,17 +400,6 @@ class CGI(mobile_gateway.CGI):
                 f.close()
             except IOError:
                 self.print404(cache)
-
-    def print_post_form(self, cache):
-        suffixes = list(mimetypes.types_map.keys())
-        suffixes.sort()
-        var = {
-            'cache': cache,
-            'suffixes': suffixes,
-            'limit': config.record_limit * 3 // 4,
-        }
-        self.stdout.write(self.template('mobile_post_form', var))
-
 
     def print_threads(self):
         if self.str_filter:

@@ -35,6 +35,11 @@ Content-Type: text/html; charset=UTF-8
   </head>
 
 <style>
+html {
+	overflow: -moz-scrollbars-vertical; 
+	overflow-y: scroll;
+}
+
 body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif, 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ;
 }
