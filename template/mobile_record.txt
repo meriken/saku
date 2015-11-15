@@ -4,52 +4,16 @@
 
 
 
-{#
-<dt id="r{{sid}}" data-record-id="{{sid}}">
-{% if isadmin %}
-  <input type="checkbox" name="record" value="{{rec.stamp}}_{{rec.id}}" />
-{% endif %}
-<a href="{{thread_cgi}}/{{str_path}}/{{sid}}" class="id" id="i{{sid}}" name="i{{sid}}">{{sid}}</a>
-{% if rec.get('name', '') %}
-  <span class="name">{{rec.name}}</span>
+<a id="r{{sid}}"></a>
+{% if not ajax %}
+<div class="panel panel-default {% if new_record %}new-record panel-danger{% else %}old-record{% endif %}">
+	<div class="panel-heading" style="color:black;">
 {% else %}
-  <span class="name">{{message.anonymous}}</span>
+    <div class="well well-sm" style="background: #ebebc4; border: solid 1px #cc0; margin-bottom: 8px; padding: 8px;">
 {% endif %}
-{% if rec.get('mail', '') %}
-  [{{rec.mail}}]
-{% endif %}
-{% if rec.get('pubkey', '') %}
-  <span class="sign" title="{{message.signature}}:{{rec.target}}">{{rec.pubkey}}</span>
-{% endif %}
-<span class="stamp" data-stamp="{{rec.stamp}}">{{localtime(rec.stamp)}}</span>
-{% if 'attach' in rec %}
-  <a href="{{thread_cgi}}/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}">{{rec.stamp}}.{{suffix}}</a>
-  ({{attach_size//1024}}{{message.kb}})
-{% endif %}
-</dt>
-<dd id="b{{sid}}">{{body}}
-{% if ('remove_id' in rec) and ('remove_stamp' in rec) %}
-  <br />[[{{message.remove}}]:
-  {{res_anchor(rec.remove_id[:8], thread_cgi, path)}}{{rec.remove_id[:8]}}</a>]]
-{% endif %}
-{% if thumbnail %}
-  <br /><a href="{{thread_cgi}}/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}">
-    <img src="/x.gif" data-lazyimg data-src="{{thread_cgi}}/{{cache.datfile}}/{{rec.id}}/s{{rec.stamp}}.{{thumbnail}}.{{suffix}}" alt="" /></a>
-{% elif ('attach' in rec) and (suffix in ('jpg', 'gif', 'png')) %}
-  <br /><img src="/x.gif" data-lazyimg data-src="{{thread_cgi}}/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}" height="210" alt="" /></a>
-{% endif %}
-</dd>
-#}
-
-
-
-      <div class="panel panel-default">
-        <div class="panel-heading">
-        <span class="" style="display:inline-block;width:85%;vertical-align:middle;">
+        <span style="display:inline-block;width:80%;vertical-align:middle;">
 			<span style="top:3px;" class="glyphicon glyphicon-barcode"></span>
-			<a href="{{mobile_gateway_cgi}}/thread/{{str_path}}/{{sid}}" class="id" id="i{{sid}}" name="i{{sid}}" style="color:black;font-family:'Courier New',monotype;word-break:keep-all;white-space:nowrap;">
-			{{sid}}
-			</a>
+			<a href="{{mobile_gateway_cgi}}/thread/{{str_path}}/{{sid}}" class="id" id="i{{sid}}" style="color:black;font-family:'Courier New',monotype;word-break:keep-all;white-space:nowrap;">{{sid}}</a>
 			&nbsp;
 			<span style="word-break:keep-all;white-space:nowrap;">
 			{% if rec.get('name', '') %}
@@ -78,42 +42,53 @@
 			  </span>
 			{% endif %}
         </span>
-          <div class="btn-group pull-right" style="vertical-align:middle;">
-			<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding: 2px 6px 0px 6px;"><span class="glyphicon glyphicon-cog"></span></a>
+
+{% if not ajax %}
+		<div class="btn-group pull-right" style="vertical-align:middle;">
+			<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding: 2px 6px 0px 6px;">
+				<span class="glyphicon glyphicon-cog"></span>
+				<span class="caret" style="margin-top:-3px;"></span>
+			</a>
 			<ul class="dropdown-menu">
-			  <li><a href="#">Action</a></li>
-			  <li><a href="#">Another action</a></li>
-			  <li><a href="#">Something else here</a></li>
-			  <li role="separator" class="divider"></li>
-			  <li><a href="#">Separated link</a></li>
+				<li><a href="#">Action</a></li>
+				<li><a href="#">Another action</a></li>
+				<li><a href="#">Something else here</a></li>
+				<li role="separator" class="divider">Divider</li>
+				<li><a href="#">Separated link</a></li>
 			</ul>
-          </div>
-		  <div class="clearfix"></div>
-        </div>
-        <div class="panel-body">
-           {{body}}
-{% if thumbnail %}
-  <br /><a href="{{thread_cgi}}/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}">
-    <img src="{{thread_cgi}}/{{cache.datfile}}/{{rec.id}}/s{{rec.stamp}}.{{thumbnail}}.{{suffix}}" alt="" /></a>
-{% elif ('attach' in rec) and (suffix in ('jpg', 'jpeg', 'gif', 'png')) %}
-  {% if body != '' %}<br />{% endif %}
-    <div style="overflow: hidden;">
-    <img id="image-{{rec.id}}" src="{{mobile_gateway_cgi}}/thread/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}" height="210" alt="" style="" />
+		</div>
+		<div class="clearfix"></div>
+	</div>
+
+	<div class="panel-body">
+{% else %}
     </div>
-	<script>
-	    $('#image-{{rec.id}}').on('click', function (event) {
-        $('#blueimp-gallery').data('useBootstrapModal', false);
-        $('#blueimp-gallery').toggleClass('blueimp-gallery-controls', true);
-        event.preventDefault();
-        blueimp.Gallery([
-            {
-                //title: 'Sintel',
-                href: '{{mobile_gateway_cgi}}/thread/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}',
-                //type: 'video/mp4',
-                //poster: 'https://i.imgur.com/MUSw4Zu.jpg'
-			}], $('#blueimp-gallery').data())
-		});
-	</script>
 {% endif %}
-        </div>
-      </div>
+		{{body}}
+		{% if thumbnail %}
+			<br /><a href="{{thread_cgi}}/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}">
+			<img src="{{thread_cgi}}/{{cache.datfile}}/{{rec.id}}/s{{rec.stamp}}.{{thumbnail}}.{{suffix}}" alt="" /></a>
+		{% elif ('attach' in rec) and (suffix in ('jpg', 'jpeg', 'gif', 'png')) %}
+			{% if body != '' %}<br />{% endif %}
+			<div style="overflow: hidden;">
+			<img id="image-{{rec.id}}" src="{{mobile_gateway_cgi}}/thread/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}" height="210" alt="" style="" />
+			</div>
+			<script>
+				$('#image-{{rec.id}}').on('click', function (event) {
+				$('#blueimp-gallery').data('useBootstrapModal', false);
+				$('#blueimp-gallery').toggleClass('blueimp-gallery-controls', true);
+				event.preventDefault();
+				blueimp.Gallery([
+					{
+						//title: '',
+						href: '{{mobile_gateway_cgi}}/thread/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}',
+						//type: '',
+						//poster: ''
+					}], $('#blueimp-gallery').data())
+				});
+			</script>
+		{% endif %}
+{% if not ajax %}
+	</div>
+</div>
+{% endif %}

@@ -12,23 +12,31 @@
     :copyright: (c) 2010 by the Jinja Team.
     :license: BSD.
 """
+import types
 import operator
 from jinja2.environment import Environment
 from jinja2.exceptions import SecurityError
-from jinja2.utils import FunctionType, MethodType, TracebackType, CodeType, \
-     FrameType, GeneratorType
+from jinja2._compat import string_types, PY2
 
 
 #: maximum number of items a range may produce
 MAX_RANGE = 100000
 
 #: attributes of function objects that are considered unsafe.
-UNSAFE_FUNCTION_ATTRIBUTES = set(['func_closure', 'func_code', 'func_dict',
-                                  'func_defaults', 'func_globals'])
+if PY2:
+    UNSAFE_FUNCTION_ATTRIBUTES = set(['func_closure', 'func_code', 'func_dict',
+                                      'func_defaults', 'func_globals'])
+else:
+    # On versions > python 2 the special attributes on functions are gone,
+    # but they remain on methods and generators for whatever reason.
+    UNSAFE_FUNCTION_ATTRIBUTES = set()
+
 
 #: unsafe method attributes.  function attributes are unsafe for methods too
 UNSAFE_METHOD_ATTRIBUTES = set(['im_class', 'im_func', 'im_self'])
 
+#: unsafe generator attirbutes.
+UNSAFE_GENERATOR_ATTRIBUTES = set(['gi_frame', 'gi_code'])
 
 import warnings
 
@@ -46,7 +54,7 @@ _mutable_sequence_types = (list,)
 # on python 2.x we can register the user collection types
 try:
     from UserDict import UserDict, DictMixin
-    from collections import UserList
+    from UserList import UserList
     _mutable_mapping_types += (UserDict, DictMixin)
     _mutable_set_types += (UserList,)
 except ImportError:
@@ -90,7 +98,7 @@ def safe_range(*args):
     """A range that can't generate ranges with a length of more than
     MAX_RANGE items.
     """
-    rng = list(range(*args))
+    rng = range(*args)
     if len(rng) > MAX_RANGE:
         raise OverflowError('range too big, maximum size for range is %d' %
                             MAX_RANGE)
@@ -114,30 +122,28 @@ def is_internal_attribute(obj, attr):
     """Test if the attribute given is an internal python attribute.  For
     example this function returns `True` for the `func_code` attribute of
     python objects.  This is useful if the environment method
-    :meth:`~SandboxedEnvironment.is_safe_attribute` is overriden.
+    :meth:`~SandboxedEnvironment.is_safe_attribute` is overridden.
 
     >>> from jinja2.sandbox import is_internal_attribute
-    >>> is_internal_attribute(lambda: None, "func_code")
-    True
-    >>> is_internal_attribute((lambda x:x).__code__, 'co_code')
+    >>> is_internal_attribute(str, "mro")
     True
     >>> is_internal_attribute(str, "upper")
     False
     """
-    if isinstance(obj, FunctionType):
+    if isinstance(obj, types.FunctionType):
         if attr in UNSAFE_FUNCTION_ATTRIBUTES:
             return True
-    elif isinstance(obj, MethodType):
+    elif isinstance(obj, types.MethodType):
         if attr in UNSAFE_FUNCTION_ATTRIBUTES or \
            attr in UNSAFE_METHOD_ATTRIBUTES:
             return True
     elif isinstance(obj, type):
         if attr == 'mro':
             return True
-    elif isinstance(obj, (CodeType, TracebackType, FrameType)):
+    elif isinstance(obj, (types.CodeType, types.TracebackType, types.FrameType)):
         return True
-    elif isinstance(obj, GeneratorType):
-        if attr == 'gi_frame':
+    elif isinstance(obj, types.GeneratorType):
+        if attr in UNSAFE_GENERATOR_ATTRIBUTES:
             return True
     return attr.startswith('__')
 
@@ -299,7 +305,7 @@ class SandboxedEnvironment(Environment):
         try:
             return obj[argument]
         except (TypeError, LookupError):
-            if isinstance(argument, str):
+            if isinstance(argument, string_types):
                 try:
                     attr = str(argument)
                 except Exception:
@@ -359,4 +365,3 @@ class ImmutableSandboxedEnvironment(SandboxedEnvironment):
         if not SandboxedEnvironment.is_safe_attribute(self, obj, attr, value):
             return False
         return not modifies_known_mutable(obj, attr)
-

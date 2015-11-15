@@ -1,10 +1,12 @@
 Content-Type: text/html; charset=UTF-8
+{%-if cookie %}
+{{cookie}}
+{%- endif %}
 
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="">
@@ -15,7 +17,7 @@ Content-Type: text/html; charset=UTF-8
 
     <!-- Bootstrap core CSS -->
     <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="//blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
+<link rel="stylesheet" href="/blueimp-gallery/css/blueimp-gallery.min.css">
 <link rel="stylesheet" href="/bootstrap-image-gallery/css/bootstrap-image-gallery.css">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -28,62 +30,81 @@ Content-Type: text/html; charset=UTF-8
     ================================================== -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="/bootstrap/js/bootstrap.min.js"></script>
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script>$(function () {  $('[data-toggle="tooltip"]').tooltip(); })</script>
+	<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="http://getbootstrap.com/assets/js/ie10-viewport-bug-workaround.js"></script>
-<script src="//blueimp.github.io/Gallery/js/jquery.blueimp-gallery.min.js"></script>
+<script src="/blueimp-gallery/js/jquery.blueimp-gallery.min.js"></script>
 <script src="/bootstrap-image-gallery/js/bootstrap-image-gallery.js"></script>
+<style>
+	html {
+		overflow: -moz-scrollbars-vertical; 
+		overflow-y: scroll;
+
+		    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+	}
+
+	body {
+	  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif, 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ;
+	}
+	.panel {
+		margin-bottom: 10px;
+		overflow: hidden;
+	}
+
+	a {
+	  word-break: break-all;
+	}
+
+	body > .container {
+	  max-width: 640px;
+	  padding: 65px 15px 10px;
+	}
+
+	body > .container > h2:first-child {
+	  margin-top: 0px;
+	}
+
+	input {
+		max-width: 1;
+	} 
+
+	.tooltip.in {
+		opacity: 1;
+	} 
+
+	.tooltip-inner {
+	  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif, 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ;
+		font-size: 14px;
+	    text-align: left; 
+		color: black;
+		background: #ffd;
+		max-width: 80%;
+		border: solid 1px #dda;
+		padding:8px;
+		margin-left: 15px;
+		overflow: hidden;
+	}
+
+	.anchor {
+		background-color: #f5f5f5;
+		display: inline-block;
+		padding: 0px 8px;
+		vertical-align: baseline;
+		margin: 2px;
+	}
+
+	.tooltip-inner > .anchor {
+		background-color: #ebebc4;
+		border: solid 1px #cc0;
+	}
+</style>
   </head>
 
-<style>
-html {
-	overflow: -moz-scrollbars-vertical; 
-	overflow-y: scroll;
-}
-
-body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif, 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ;
-}
-.panel {
-    margin-bottom: 10px;
-}
-
-a, .panel-body {
-  word-break: break-all;
-}
-
-body > .container {
-  max-width: 640px;
-  padding: 70px 15px 0;
-}
-
-body > .container > h2:first-child{
-  margin-top: 0px;
-}
-
-input {
-    max-width: 100%;
-} 
-
-/* Sticky footer styles
--------------------------------------------------- */
-html {
-  position: relative;
-  min-height: 100%;
-}
-body {
-  /* Margin bottom by footer height */
-  margin-bottom: 60px;
-}
-.footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  /* Set the fixed height of the footer here */
-  height: 60px;
-  background-color: #f5f5f5;
-}
-
-</style>
   <body>
 
     <!-- Fixed navbar -->
@@ -106,6 +127,7 @@ body {
         </div><!--/.nav-collapse -->
       </div>
     </nav>
+	<a id="page-top"></a>
 
     <!-- Begin page content -->
     <div class="container">

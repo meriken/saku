@@ -289,9 +289,9 @@ class CGI(basecgi.CGI):
             innerlink = ''
         else:
             prefix = ''
-            innerlink = ' class="innerlink"'
-        return '<a href="%s%s%s%s/%s"%s>' % \
-               (prefix, appli, self.sep, title, id, innerlink)
+            innerlink = 'innerlink'
+        return '<a class="anchor btn btn-default white-tooltip %s" data-href="%s%s%s%s/%s?ajax=1" data-toggle="tooltip">' % \
+               (innerlink, prefix, appli, self.sep, title, id)
 
     def html_format(self, plain, appli, title, absuri=False):
         buf = plain.replace("<br>", "\n")

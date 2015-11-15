@@ -11,16 +11,25 @@
 import os
 import sys
 from jinja2 import nodes
-from jinja2.defaults import *
+from jinja2.defaults import BLOCK_START_STRING, \
+     BLOCK_END_STRING, VARIABLE_START_STRING, VARIABLE_END_STRING, \
+     COMMENT_START_STRING, COMMENT_END_STRING, LINE_STATEMENT_PREFIX, \
+     LINE_COMMENT_PREFIX, TRIM_BLOCKS, NEWLINE_SEQUENCE, \
+     DEFAULT_FILTERS, DEFAULT_TESTS, DEFAULT_NAMESPACE, \
+     KEEP_TRAILING_NEWLINE, LSTRIP_BLOCKS
 from jinja2.lexer import get_lexer, TokenStream
 from jinja2.parser import Parser
+from jinja2.nodes import EvalContext
 from jinja2.optimizer import optimize
-from jinja2.compiler import generate
-from jinja2.runtime import Undefined, new_context
+from jinja2.compiler import generate, CodeGenerator
+from jinja2.runtime import Undefined, new_context, Context
 from jinja2.exceptions import TemplateSyntaxError, TemplateNotFound, \
-     TemplatesNotFound
+     TemplatesNotFound, TemplateRuntimeError
 from jinja2.utils import import_string, LRUCache, Markup, missing, \
-     concat, consume, internalcode, _encode_filename
+     concat, consume, internalcode
+from jinja2._compat import imap, ifilter, string_types, iteritems, \
+     text_type, reraise, implements_iterator, implements_to_string, \
+     get_next, encode_filename, PY2, PYPY
 from functools import reduce
 
 
@@ -68,11 +77,11 @@ def copy_cache(cache):
 
 def load_extensions(environment, extensions):
     """Load the extensions from the list and bind it to the environment.
-    Returns a dict of instanciated environments.
+    Returns a dict of instantiated environments.
     """
     result = {}
     for extension in extensions:
-        if isinstance(extension, str):
+        if isinstance(extension, string_types):
             extension = import_string(extension)
         result[extension.identifier] = extension(environment)
     return result
@@ -81,13 +90,13 @@ def load_extensions(environment, extensions):
 def _environment_sanity_check(environment):
     """Perform a sanity check on the environment."""
     assert issubclass(environment.undefined, Undefined), 'undefined must ' \
-           'be a subclass of undefined because filters depend on it.'
+        'be a subclass of undefined because filters depend on it.'
     assert environment.block_start_string != \
-           environment.variable_start_string != \
-           environment.comment_start_string, 'block, variable and comment ' \
-           'start strings must be different'
+        environment.variable_start_string != \
+        environment.comment_start_string, 'block, variable and comment ' \
+        'start strings must be different'
     assert environment.newline_sequence in ('\r', '\r\n', '\n'), \
-           'newline_sequence set to unknown line ending string.'
+        'newline_sequence set to unknown line ending string.'
     return environment
 
 
@@ -99,16 +108,16 @@ class Environment(object):
     Modifications on environments after the first template was loaded
     will lead to surprising effects and undefined behavior.
 
-    Here the possible initialization parameters:
+    Here are the possible initialization parameters:
 
         `block_start_string`
-            The string marking the begin of a block.  Defaults to ``'{%'``.
+            The string marking the beginning of a block.  Defaults to ``'{%'``.
 
         `block_end_string`
             The string marking the end of a block.  Defaults to ``'%}'``.
 
         `variable_start_string`
-            The string marking the begin of a print statement.
+            The string marking the beginning of a print statement.
             Defaults to ``'{{'``.
 
         `variable_end_string`
@@ -116,7 +125,7 @@ class Environment(object):
             ``'}}'``.
 
         `comment_start_string`
-            The string marking the begin of a comment.  Defaults to ``'{#'``.
+            The string marking the beginning of a comment.  Defaults to ``'{#'``.
 
         `comment_end_string`
             The string marking the end of a comment.  Defaults to ``'#}'``.
@@ -127,7 +136,7 @@ class Environment(object):
 
         `line_comment_prefix`
             If given and a string, this will be used as prefix for line based
-            based comments.  See also :ref:`line-statements`.
+            comments.  See also :ref:`line-statements`.
 
             .. versionadded:: 2.2
 
@@ -135,11 +144,22 @@ class Environment(object):
             If this is set to ``True`` the first newline after a block is
             removed (block, not variable tag!).  Defaults to `False`.
 
+        `lstrip_blocks`
+            If this is set to ``True`` leading spaces and tabs are stripped
+            from the start of a line to a block.  Defaults to `False`.
+
         `newline_sequence`
             The sequence that starts a newline.  Must be one of ``'\r'``,
             ``'\n'`` or ``'\r\n'``.  The default is ``'\n'`` which is a
             useful default for Linux and OS X systems as well as web
             applications.
+
+        `keep_trailing_newline`
+            Preserve the trailing newline when rendering templates.
+            The default is ``False``, which causes a single newline,
+            if present, to be stripped from the end of the template.
+
+            .. versionadded:: 2.7
 
         `extensions`
             List of Jinja extensions to use.  This can either be import paths
@@ -160,7 +180,7 @@ class Environment(object):
 
         `autoescape`
             If set to true the XML/HTML autoescaping feature is enabled by
-            default.  For more details about auto escaping see
+            default.  For more details about autoescaping see
             :class:`~jinja2.utils.Markup`.  As of Jinja 2.4 this can also
             be a callable that is passed the template name and has to
             return `True` or `False` depending on autoescape should be
@@ -173,11 +193,14 @@ class Environment(object):
             The template loader for this environment.
 
         `cache_size`
-            The size of the cache.  Per default this is ``50`` which means
-            that if more than 50 templates are loaded the loader will clean
+            The size of the cache.  Per default this is ``400`` which means
+            that if more than 400 templates are loaded the loader will clean
             out the least recently used template.  If the cache size is set to
             ``0`` templates are recompiled all the time, if the cache size is
             ``-1`` the cache will not be cleaned.
+
+            .. versionchanged:: 2.8
+               The cache size was increased to 400 from a low 50.
 
         `auto_reload`
             Some loaders load templates from locations where the template
@@ -215,6 +238,14 @@ class Environment(object):
     exception_handler = None
     exception_formatter = None
 
+    #: the class that is used for code generation.  See
+    #: :class:`~jinja2.compiler.CodeGenerator` for more information.
+    code_generator_class = CodeGenerator
+
+    #: the context class thatis used for templates.  See
+    #: :class:`~jinja2.runtime.Context` for more information.
+    context_class = Context
+
     def __init__(self,
                  block_start_string=BLOCK_START_STRING,
                  block_end_string=BLOCK_END_STRING,
@@ -225,14 +256,16 @@ class Environment(object):
                  line_statement_prefix=LINE_STATEMENT_PREFIX,
                  line_comment_prefix=LINE_COMMENT_PREFIX,
                  trim_blocks=TRIM_BLOCKS,
+                 lstrip_blocks=LSTRIP_BLOCKS,
                  newline_sequence=NEWLINE_SEQUENCE,
+                 keep_trailing_newline=KEEP_TRAILING_NEWLINE,
                  extensions=(),
                  optimized=True,
                  undefined=Undefined,
                  finalize=None,
                  autoescape=False,
                  loader=None,
-                 cache_size=50,
+                 cache_size=400,
                  auto_reload=True,
                  bytecode_cache=None):
         # !!Important notice!!
@@ -240,7 +273,7 @@ class Environment(object):
         #   passed by keyword rather than position.  However it's important to
         #   not change the order of arguments because it's used at least
         #   internally in those cases:
-        #       -   spontaneus environments (i18n extension and Template)
+        #       -   spontaneous environments (i18n extension and Template)
         #       -   unittests
         #   If parameter changes are required only add parameters at the end
         #   and don't change the arguments (or the defaults!) of the arguments
@@ -256,7 +289,9 @@ class Environment(object):
         self.line_statement_prefix = line_statement_prefix
         self.line_comment_prefix = line_comment_prefix
         self.trim_blocks = trim_blocks
+        self.lstrip_blocks = lstrip_blocks
         self.newline_sequence = newline_sequence
+        self.keep_trailing_newline = keep_trailing_newline
 
         # runtime information
         self.undefined = undefined
@@ -271,7 +306,6 @@ class Environment(object):
 
         # set the loader provided
         self.loader = loader
-        self.bytecode_cache = None
         self.cache = create_cache(cache_size)
         self.bytecode_cache = bytecode_cache
         self.auto_reload = auto_reload
@@ -293,7 +327,7 @@ class Environment(object):
         yet.  This is used by :ref:`extensions <writing-extensions>` to register
         callbacks and configuration values without breaking inheritance.
         """
-        for key, value in attributes.items():
+        for key, value in iteritems(attributes):
             if not hasattr(self, key):
                 setattr(self, key, value)
 
@@ -301,12 +335,13 @@ class Environment(object):
                 variable_start_string=missing, variable_end_string=missing,
                 comment_start_string=missing, comment_end_string=missing,
                 line_statement_prefix=missing, line_comment_prefix=missing,
-                trim_blocks=missing, extensions=missing, optimized=missing,
+                trim_blocks=missing, lstrip_blocks=missing,
+                extensions=missing, optimized=missing,
                 undefined=missing, finalize=missing, autoescape=missing,
                 loader=missing, cache_size=missing, auto_reload=missing,
                 bytecode_cache=missing):
         """Create a new overlay environment that shares all the data with the
-        current environment except of cache and the overridden attributes.
+        current environment except for cache and the overridden attributes.
         Extensions cannot be removed for an overlayed environment.  An overlayed
         environment automatically gets all the extensions of the environment it
         is linked to plus optional extra extensions.
@@ -324,7 +359,7 @@ class Environment(object):
         rv.overlayed = True
         rv.linked_to = self
 
-        for key, value in args.items():
+        for key, value in iteritems(args):
             if value is not missing:
                 setattr(rv, key, value)
 
@@ -334,7 +369,7 @@ class Environment(object):
             rv.cache = copy_cache(self.cache)
 
         rv.extensions = {}
-        for key, value in self.extensions.items():
+        for key, value in iteritems(self.extensions):
             rv.extensions[key] = value.bind(rv)
         if extensions is not missing:
             rv.extensions.update(load_extensions(rv, extensions))
@@ -345,7 +380,7 @@ class Environment(object):
 
     def iter_extensions(self):
         """Iterates over the extensions by priority."""
-        return iter(sorted(list(self.extensions.values()),
+        return iter(sorted(self.extensions.values(),
                            key=lambda x: x.priority))
 
     def getitem(self, obj, argument):
@@ -353,7 +388,7 @@ class Environment(object):
         try:
             return obj[argument]
         except (TypeError, LookupError):
-            if isinstance(argument, str):
+            if isinstance(argument, string_types):
                 try:
                     attr = str(argument)
                 except Exception:
@@ -378,6 +413,42 @@ class Environment(object):
         except (TypeError, LookupError, AttributeError):
             return self.undefined(obj=obj, name=attribute)
 
+    def call_filter(self, name, value, args=None, kwargs=None,
+                    context=None, eval_ctx=None):
+        """Invokes a filter on a value the same way the compiler does it.
+
+        .. versionadded:: 2.7
+        """
+        func = self.filters.get(name)
+        if func is None:
+            raise TemplateRuntimeError('no filter named %r' % name)
+        args = [value] + list(args or ())
+        if getattr(func, 'contextfilter', False):
+            if context is None:
+                raise TemplateRuntimeError('Attempted to invoke context '
+                                           'filter without context')
+            args.insert(0, context)
+        elif getattr(func, 'evalcontextfilter', False):
+            if eval_ctx is None:
+                if context is not None:
+                    eval_ctx = context.eval_ctx
+                else:
+                    eval_ctx = EvalContext(self)
+            args.insert(0, eval_ctx)
+        elif getattr(func, 'environmentfilter', False):
+            args.insert(0, self)
+        return func(*args, **(kwargs or {}))
+
+    def call_test(self, name, value, args=None, kwargs=None):
+        """Invokes a test on a value the same way the compiler does it.
+
+        .. versionadded:: 2.7
+        """
+        func = self.tests.get(name)
+        if func is None:
+            raise TemplateRuntimeError('no test named %r' % name)
+        return func(value, *(args or ()), **(kwargs or {}))
+
     @internalcode
     def parse(self, source, name=None, filename=None):
         """Parse the sourcecode and return the abstract syntax tree.  This
@@ -396,7 +467,7 @@ class Environment(object):
 
     def _parse(self, source, name, filename):
         """Internal parsing function used by `parse` and `compile`."""
-        return Parser(self, source, name, _encode_filename(filename)).parse()
+        return Parser(self, source, name, encode_filename(filename)).parse()
 
     def lex(self, source, name=None, filename=None):
         """Lex the given sourcecode and return a generator that yields
@@ -408,7 +479,7 @@ class Environment(object):
         of the extensions to be applied you have to filter source through
         the :meth:`preprocess` method.
         """
-        source = str(source)
+        source = text_type(source)
         try:
             return self.lexer.tokeniter(source, name, filename)
         except TemplateSyntaxError:
@@ -421,7 +492,7 @@ class Environment(object):
         because there you usually only want the actual source tokenized.
         """
         return reduce(lambda s, e: e.preprocess(s, name, filename),
-                      self.iter_extensions(), str(source))
+                      self.iter_extensions(), text_type(source))
 
     def _tokenize(self, source, name, filename=None, state=None):
         """Called by the parser to do the preprocessing and filtering
@@ -436,7 +507,7 @@ class Environment(object):
         return stream
 
     def _generate(self, source, name, filename, defer_init=False):
-        """Internal hook that can be overriden to hook a different generate
+        """Internal hook that can be overridden to hook a different generate
         method in.
 
         .. versionadded:: 2.5
@@ -444,7 +515,7 @@ class Environment(object):
         return generate(source, self, name, filename, defer_init=defer_init)
 
     def _compile(self, source, filename):
-        """Internal hook that can be overriden to hook a different compile
+        """Internal hook that can be overridden to hook a different compile
         method in.
 
         .. versionadded:: 2.5
@@ -475,7 +546,7 @@ class Environment(object):
         """
         source_hint = None
         try:
-            if isinstance(source, str):
+            if isinstance(source, string_types):
                 source_hint = source
                 source = self._parse(source, name, filename)
             if self.optimized:
@@ -487,11 +558,11 @@ class Environment(object):
             if filename is None:
                 filename = '<template>'
             else:
-                filename = _encode_filename(filename)
+                filename = encode_filename(filename)
             return self._compile(source, filename)
         except TemplateSyntaxError:
             exc_info = sys.exc_info()
-        self.handle_exception(exc_info, source_hint=source)
+        self.handle_exception(exc_info, source_hint=source_hint)
 
     def compile_expression(self, source, undefined_to_none=True):
         """A handy helper method that returns a callable that accepts keyword
@@ -543,8 +614,8 @@ class Environment(object):
                           ignore_errors=True, py_compile=False):
         """Finds all the templates the loader can find, compiles them
         and stores them in `target`.  If `zip` is `None`, instead of in a
-        zipfile, the templates will be will be stored in a directory.
-        By default a deflate zip algorithm is used, to switch to
+        zipfile, the templates will be stored in a directory.
+        By default a deflate zip algorithm is used. To switch to
         the stored algorithm, `zip` can be set to ``'stored'``.
 
         `extensions` and `filter_func` are passed to :meth:`list_templates`.
@@ -557,7 +628,9 @@ class Environment(object):
         to `False` and you will get an exception on syntax errors.
 
         If `py_compile` is set to `True` .pyc files will be written to the
-        target instead of standard .py files.
+        target instead of standard .py files.  This flag does not do anything
+        on pypy and Python 3 where pyc files are not picked up by itself and
+        don't give much benefit.
 
         .. versionadded:: 2.4
         """
@@ -567,9 +640,19 @@ class Environment(object):
             log_function = lambda x: None
 
         if py_compile:
-            import imp, marshal
-            py_header = imp.get_magic() + \
-                '\xff\xff\xff\xff'.encode('iso-8859-15')
+            if not PY2 or PYPY:
+                from warnings import warn
+                warn(Warning('py_compile has no effect on pypy or Python 3'))
+                py_compile = False
+            else:
+                import imp
+                import marshal
+                py_header = imp.get_magic() + \
+                    u'\xff\xff\xff\xff'.encode('iso-8859-15')
+
+                # Python 3.3 added a source filesize to the header
+                if sys.version_info >= (3, 3):
+                    py_header += u'\x00\x00\x00\x00'.encode('iso-8859-15')
 
         def write_file(filename, data, mode):
             if zip:
@@ -607,7 +690,7 @@ class Environment(object):
                 filename = ModuleLoader.get_module_filename(name)
 
                 if py_compile:
-                    c = self._compile(code, _encode_filename(filename))
+                    c = self._compile(code, encode_filename(filename))
                     write_file(filename + 'c', py_header +
                                marshal.dumps(c), 'wb')
                     log_function('Byte-compiled "%s" as %s' %
@@ -645,7 +728,7 @@ class Environment(object):
             filter_func = lambda x: '.' in x and \
                                     x.rsplit('.', 1)[1] in extensions
         if filter_func is not None:
-            x = list(filter(filter_func, x))
+            x = list(ifilter(filter_func, x))
         return x
 
     def handle_exception(self, exc_info=None, rendered=False, source_hint=None):
@@ -668,7 +751,7 @@ class Environment(object):
         if self.exception_handler is not None:
             self.exception_handler(traceback)
         exc_type, exc_value, tb = traceback.standard_exc_info
-        raise exc_value.with_traceback(tb)
+        reraise(exc_type, exc_value, tb)
 
     def join_path(self, template, parent):
         """Join a template with the parent.  By default all the lookups are
@@ -686,14 +769,23 @@ class Environment(object):
     def _load_template(self, name, globals):
         if self.loader is None:
             raise TypeError('no loader for this environment specified')
+        try:
+            # use abs path for cache key
+            cache_key = self.loader.get_source(self, name)[1]
+        except RuntimeError:
+            # if loader does not implement get_source()
+            cache_key = None
+        # if template is not file, use name for cache key
+        if cache_key is None:
+            cache_key = name
         if self.cache is not None:
-            template = self.cache.get(name)
-            if template is not None and (not self.auto_reload or \
+            template = self.cache.get(cache_key)
+            if template is not None and (not self.auto_reload or
                                          template.is_up_to_date):
                 return template
         template = self.loader.load(self, name, globals)
         if self.cache is not None:
-            self.cache[name] = template
+            self.cache[cache_key] = template
         return template
 
     @internalcode
@@ -732,8 +824,8 @@ class Environment(object):
            from the function unchanged.
         """
         if not names:
-            raise TemplatesNotFound(message='Tried to select from an empty list '
-                                            'of templates.')
+            raise TemplatesNotFound(message=u'Tried to select from an empty list '
+                                            u'of templates.')
         globals = self.make_globals(globals)
         for name in names:
             if isinstance(name, Template):
@@ -755,7 +847,7 @@ class Environment(object):
 
         .. versionadded:: 2.3
         """
-        if isinstance(template_name_or_list, str):
+        if isinstance(template_name_or_list, string_types):
             return self.get_template(template_name_or_list, parent, globals)
         elif isinstance(template_name_or_list, Template):
             return template_name_or_list
@@ -795,12 +887,11 @@ class Template(object):
     and compatible settings.
 
     >>> template = Template('Hello {{ name }}!')
-    >>> template.render(name='John Doe')
-    u'Hello John Doe!'
-
+    >>> template.render(name='John Doe') == u'Hello John Doe!'
+    True
     >>> stream = template.stream(name='John Doe')
-    >>> next(stream)
-    u'Hello John Doe!'
+    >>> next(stream) == u'Hello John Doe!'
+    True
     >>> next(stream)
     Traceback (most recent call last):
         ...
@@ -817,7 +908,9 @@ class Template(object):
                 line_statement_prefix=LINE_STATEMENT_PREFIX,
                 line_comment_prefix=LINE_COMMENT_PREFIX,
                 trim_blocks=TRIM_BLOCKS,
+                lstrip_blocks=LSTRIP_BLOCKS,
                 newline_sequence=NEWLINE_SEQUENCE,
+                keep_trailing_newline=KEEP_TRAILING_NEWLINE,
                 extensions=(),
                 optimized=True,
                 undefined=Undefined,
@@ -827,8 +920,9 @@ class Template(object):
             block_start_string, block_end_string, variable_start_string,
             variable_end_string, comment_start_string, comment_end_string,
             line_statement_prefix, line_comment_prefix, trim_blocks,
-            newline_sequence, frozenset(extensions), optimized, undefined,
-            finalize, autoescape, None, 0, False, None)
+            lstrip_blocks, newline_sequence, keep_trailing_newline,
+            frozenset(extensions), optimized, undefined, finalize, autoescape,
+            None, 0, False, None)
         return env.from_string(source, template_class=cls)
 
     @classmethod
@@ -946,9 +1040,9 @@ class Template(object):
 
         >>> t = Template('{% macro foo() %}42{% endmacro %}23')
         >>> str(t.module)
-        u'23'
-        >>> t.module.foo()
-        u'42'
+        '23'
+        >>> t.module.foo() == u'42'
+        True
         """
         if self._module is not None:
             return self._module
@@ -974,7 +1068,7 @@ class Template(object):
     @property
     def debug_info(self):
         """The debug info mapping."""
-        return [tuple(map(int, x.split('='))) for x in
+        return [tuple(imap(int, x.split('='))) for x in
                 self._debug_info.split('&')]
 
     def __repr__(self):
@@ -985,6 +1079,7 @@ class Template(object):
         return '<%s %s>' % (self.__class__.__name__, name)
 
 
+@implements_to_string
 class TemplateModule(object):
     """Represents an imported template.  All the exported names of the
     template are available as attributes on this object.  Additionally
@@ -999,13 +1094,6 @@ class TemplateModule(object):
     def __html__(self):
         return Markup(concat(self._body_stream))
 
-    def __str__(self):
-        return str(self).encode('utf-8')
-
-    # unicode goes after __str__ because we configured 2to3 to rename
-    # __unicode__ to __str__.  because the 2to3 tree is not designed to
-    # remove nodes from it, we leave the above __str__ around and let
-    # it override at runtime.
     def __str__(self):
         return concat(self._body_stream)
 
@@ -1036,6 +1124,7 @@ class TemplateExpression(object):
         return rv
 
 
+@implements_iterator
 class TemplateStream(object):
     """A template stream works pretty much like an ordinary python generator
     but it can buffer multiple items to reduce the number of total iterations.
@@ -1054,15 +1143,17 @@ class TemplateStream(object):
     def dump(self, fp, encoding=None, errors='strict'):
         """Dump the complete stream into a file or file-like object.
         Per default unicode strings are written, if you want to encode
-        before writing specifiy an `encoding`.
+        before writing specify an `encoding`.
 
         Example usage::
 
             Template('Hello {{ name }}!').stream(name='foo').dump('hello.html')
         """
         close = False
-        if isinstance(fp, str):
-            fp = file(fp, 'w')
+        if isinstance(fp, string_types):
+            if encoding is None:
+                encoding = 'utf-8'
+            fp = open(fp, 'wb')
             close = True
         try:
             if encoding is not None:
@@ -1080,7 +1171,7 @@ class TemplateStream(object):
 
     def disable_buffering(self):
         """Disable the output buffering."""
-        self._next = self._gen.__next__
+        self._next = get_next(self._gen)
         self.buffered = False
 
     def enable_buffering(self, size=5):
@@ -1108,7 +1199,7 @@ class TemplateStream(object):
                 c_size = 0
 
         self.buffered = True
-        self._next = generator(self._gen.__next__).__next__
+        self._next = get_next(generator(get_next(self._gen)))
 
     def __iter__(self):
         return self
@@ -1120,4 +1211,3 @@ class TemplateStream(object):
 # hook in default template class.  if anyone reads this comment: ignore that
 # it's possible to use custom templates ;-)
 Environment.template_class = Template
-

@@ -13,12 +13,10 @@ import sys
 import weakref
 from types import ModuleType
 from os import path
-try:
-    from hashlib import sha1
-except ImportError:
-    from sha import new as sha1
+from hashlib import sha1
 from jinja2.exceptions import TemplateNotFound
-from jinja2.utils import LRUCache, open_if_exists, internalcode
+from jinja2.utils import open_if_exists, internalcode
+from jinja2._compat import string_types, iteritems
 
 
 def split_template_path(template):
@@ -143,20 +141,28 @@ class FileSystemLoader(BaseLoader):
 
     The loader takes the path to the templates as string, or if multiple
     locations are wanted a list of them which is then looked up in the
-    given order:
+    given order::
 
     >>> loader = FileSystemLoader('/path/to/templates')
     >>> loader = FileSystemLoader(['/path/to/templates', '/other/path'])
 
     Per default the template encoding is ``'utf-8'`` which can be changed
     by setting the `encoding` parameter to something else.
+
+    To follow symbolic links, set the *followlinks* parameter to ``True``::
+
+    >>> loader = FileSystemLoader('/path/to/templates', followlinks=True)
+
+    .. versionchanged:: 2.8+
+       The *followlinks* parameter was added.
     """
 
-    def __init__(self, searchpath, encoding='utf-8'):
-        if isinstance(searchpath, str):
+    def __init__(self, searchpath, encoding='utf-8', followlinks=False):
+        if isinstance(searchpath, string_types):
             searchpath = [searchpath]
         self.searchpath = list(searchpath)
         self.encoding = encoding
+        self.followlinks = followlinks
 
     def get_source(self, environment, template):
         pieces = split_template_path(template)
@@ -171,6 +177,7 @@ class FileSystemLoader(BaseLoader):
                 f.close()
 
             mtime = path.getmtime(filename)
+
             def uptodate():
                 try:
                     return path.getmtime(filename) == mtime
@@ -182,7 +189,8 @@ class FileSystemLoader(BaseLoader):
     def list_templates(self):
         found = set()
         for searchpath in self.searchpath:
-            for dirpath, dirnames, filenames in os.walk(searchpath):
+            walk_dir = os.walk(searchpath, followlinks=self.followlinks)
+            for dirpath, dirnames, filenames in walk_dir:
                 for filename in filenames:
                     template = os.path.join(dirpath, filename) \
                         [len(searchpath):].strip(os.path.sep) \
@@ -274,7 +282,7 @@ class DictLoader(BaseLoader):
     def get_source(self, environment, template):
         if template in self.mapping:
             source = self.mapping[template]
-            return source, None, lambda: source != self.mapping.get(template)
+            return source, None, lambda: source == self.mapping.get(template)
         raise TemplateNotFound(template)
 
     def list_templates(self):
@@ -283,7 +291,7 @@ class DictLoader(BaseLoader):
 
 class FunctionLoader(BaseLoader):
     """A loader that is passed a function which does the loading.  The
-    function becomes the name of the template passed and has to return either
+    function receives the name of the template and has to return either
     an unicode string with the template source, a tuple in the form ``(source,
     filename, uptodatefunc)`` or `None` if the template does not exist.
 
@@ -306,7 +314,7 @@ class FunctionLoader(BaseLoader):
         rv = self.load_func(template)
         if rv is None:
             raise TemplateNotFound(template)
-        elif isinstance(rv, str):
+        elif isinstance(rv, string_types):
             return rv, None, None
         return rv
 
@@ -330,12 +338,16 @@ class PrefixLoader(BaseLoader):
         self.mapping = mapping
         self.delimiter = delimiter
 
-    def get_source(self, environment, template):
+    def get_loader(self, template):
         try:
             prefix, name = template.split(self.delimiter, 1)
             loader = self.mapping[prefix]
         except (ValueError, KeyError):
             raise TemplateNotFound(template)
+        return loader, name
+
+    def get_source(self, environment, template):
+        loader, name = self.get_loader(template)
         try:
             return loader.get_source(environment, name)
         except TemplateNotFound:
@@ -343,9 +355,19 @@ class PrefixLoader(BaseLoader):
             # (the one that includes the prefix)
             raise TemplateNotFound(template)
 
+    @internalcode
+    def load(self, environment, name, globals=None):
+        loader, local_name = self.get_loader(name)
+        try:
+            return loader.load(environment, local_name, globals)
+        except TemplateNotFound:
+            # re-raise the exception with the correct fileame here.
+            # (the one that includes the prefix)
+            raise TemplateNotFound(name)
+
     def list_templates(self):
         result = []
-        for prefix, loader in self.mapping.items():
+        for prefix, loader in iteritems(self.mapping):
             for template in loader.list_templates():
                 result.append(prefix + self.delimiter + template)
         return result
@@ -375,6 +397,15 @@ class ChoiceLoader(BaseLoader):
             except TemplateNotFound:
                 pass
         raise TemplateNotFound(template)
+
+    @internalcode
+    def load(self, environment, name, globals=None):
+        for loader in self.loaders:
+            try:
+                return loader.load(environment, name, globals)
+            except TemplateNotFound:
+                pass
+        raise TemplateNotFound(name)
 
     def list_templates(self):
         found = set()
@@ -408,7 +439,7 @@ class ModuleLoader(BaseLoader):
         # create a fake module that looks for the templates in the
         # path given.
         mod = _TemplateModule(package_name)
-        if isinstance(path, str):
+        if isinstance(path, string_types):
             path = [path]
         else:
             path = list(path)

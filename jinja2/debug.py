@@ -12,9 +12,10 @@
 """
 import sys
 import traceback
-from types import TracebackType
-from jinja2.utils import CodeType, missing, internal_code
+from types import TracebackType, CodeType
+from jinja2.utils import missing, internal_code
 from jinja2.exceptions import TemplateSyntaxError
+from jinja2._compat import iteritems, reraise, PY2
 
 # on pypy we can take advantage of transparent proxies
 try:
@@ -77,7 +78,7 @@ def make_frame_proxy(frame):
 
 
 class ProcessedTraceback(object):
-    """Holds a Jinja preprocessed traceback for priting or reraising."""
+    """Holds a Jinja preprocessed traceback for printing or reraising."""
 
     def __init__(self, exc_type, exc_value, frames):
         assert frames, 'no frames for this traceback?'
@@ -102,7 +103,7 @@ class ProcessedTraceback(object):
     def render_as_html(self, full=False):
         """Return a unicode string with the traceback as rendered HTML."""
         from jinja2.debugrenderer import render_traceback
-        return '%s\n\n<!--\n%s\n-->' % (
+        return u'%s\n\n<!--\n%s\n-->' % (
             render_traceback(self, full=full),
             self.render_as_text().decode('utf-8', 'replace')
         )
@@ -189,7 +190,7 @@ def translate_exception(exc_info, initial_skip=0):
     # reraise it unchanged.
     # XXX: can we backup here?  when could this happen?
     if not frames:
-        raise exc_info[1].with_traceback(exc_info[2])
+        reraise(exc_info[0], exc_info[1], exc_info[2])
 
     return ProcessedTraceback(exc_info[0], exc_info[1], frames)
 
@@ -206,7 +207,7 @@ def fake_exc_info(exc_info, filename, lineno):
             locals = ctx.get_all()
         else:
             locals = {}
-        for name, value in real_locals.items():
+        for name, value in iteritems(real_locals):
             if name.startswith('l_') and value is not missing:
                 locals[name[2:]] = value
 
@@ -244,12 +245,21 @@ def fake_exc_info(exc_info, filename, lineno):
                 location = 'block "%s"' % function[6:]
             else:
                 location = 'template'
-        code = CodeType(0, code.co_nlocals, code.co_stacksize,
-                        code.co_flags, code.co_code, code.co_consts,
-                        code.co_names, code.co_varnames, filename,
-                        location, code.co_firstlineno,
-                        code.co_lnotab, (), ())
-    except:
+
+        if PY2:
+            code = CodeType(0, code.co_nlocals, code.co_stacksize,
+                            code.co_flags, code.co_code, code.co_consts,
+                            code.co_names, code.co_varnames, filename,
+                            location, code.co_firstlineno,
+                            code.co_lnotab, (), ())
+        else:
+            code = CodeType(0, code.co_kwonlyargcount,
+                            code.co_nlocals, code.co_stacksize,
+                            code.co_flags, code.co_code, code.co_consts,
+                            code.co_names, code.co_varnames, filename,
+                            location, code.co_firstlineno,
+                            code.co_lnotab, (), ())
+    except Exception as e:
         pass
 
     # execute the code and catch the new traceback
@@ -272,11 +282,15 @@ def _init_ugly_crap():
     import ctypes
     from types import TracebackType
 
-    # figure out side of _Py_ssize_t
-    if hasattr(ctypes.pythonapi, 'Py_InitModule4_64'):
-        _Py_ssize_t = ctypes.c_int64
+    if PY2:
+        # figure out size of _Py_ssize_t for Python 2:
+        if hasattr(ctypes.pythonapi, 'Py_InitModule4_64'):
+            _Py_ssize_t = ctypes.c_int64
+        else:
+            _Py_ssize_t = ctypes.c_int
     else:
-        _Py_ssize_t = ctypes.c_int
+        # platform ssize_t on Python 3
+        _Py_ssize_t = ctypes.c_ssize_t
 
     # regular python
     class _PyObject(ctypes.Structure):
@@ -330,10 +344,7 @@ def _init_ugly_crap():
 tb_set_next = None
 if tproxy is None:
     try:
-        from jinja2._debugsupport import tb_set_next
-    except ImportError:
-        try:
-            tb_set_next = _init_ugly_crap()
-        except:
-            pass
+        tb_set_next = _init_ugly_crap()
+    except:
+        pass
     del _init_ugly_crap

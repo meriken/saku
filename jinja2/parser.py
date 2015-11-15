@@ -10,11 +10,10 @@
 """
 from jinja2 import nodes
 from jinja2.exceptions import TemplateSyntaxError, TemplateAssertionError
-from jinja2.utils import next
 from jinja2.lexer import describe_token, describe_token_expr
+from jinja2._compat import imap
 
 
-#: statements that callinto 
 _statement_keywords = frozenset(['for', 'if', 'block', 'extends', 'print',
                                  'macro', 'include', 'from', 'import',
                                  'set'])
@@ -53,7 +52,7 @@ class Parser(object):
     def _fail_ut_eof(self, name, end_token_stack, lineno):
         expected = []
         for exprs in end_token_stack:
-            expected.extend(list(map(describe_token_expr, exprs)))
+            expected.extend(imap(describe_token_expr, exprs))
         if end_token_stack:
             currently_looking = ' or '.join(
                 "'%s'" % describe_token_expr(expr)
@@ -169,9 +168,12 @@ class Parser(object):
         """Parse an assign statement."""
         lineno = next(self.stream).lineno
         target = self.parse_assign_target()
-        self.stream.expect('assign')
-        expr = self.parse_tuple()
-        return nodes.Assign(target, expr, lineno=lineno)
+        if self.stream.skip_if('assign'):
+            expr = self.parse_tuple()
+            return nodes.Assign(target, expr, lineno=lineno)
+        body = self.parse_statements(('name:endset',),
+                                     drop_needle=True)
+        return nodes.AssignBlock(target, body, lineno=lineno)
 
     def parse_for(self):
         """Parse a for loop."""
@@ -223,7 +225,7 @@ class Parser(object):
         # raise a nicer error message in that case.
         if self.stream.current.type == 'sub':
             self.fail('Block names in Jinja have to be valid Python '
-                      'identifiers and may not contain hypens, use an '
+                      'identifiers and may not contain hyphens, use an '
                       'underscore instead.')
 
         node.body = self.parse_statements(('name:endblock',), drop_needle=True)
@@ -312,6 +314,8 @@ class Parser(object):
             arg.set_ctx('param')
             if self.stream.skip_if('assign'):
                 defaults.append(self.parse_expression())
+            elif defaults:
+                self.fail('non-default argument follows default argument')
             args.append(arg)
         self.stream.expect('rparen')
 
@@ -434,8 +438,8 @@ class Parser(object):
                 ops.append(nodes.Operand(token_type, self.parse_add()))
             elif self.stream.skip_if('name:in'):
                 ops.append(nodes.Operand('in', self.parse_add()))
-            elif self.stream.current.test('name:not') and \
-                 self.stream.look().test('name:in'):
+            elif (self.stream.current.test('name:not') and
+                  self.stream.look().test('name:in')):
                 self.stream.skip(2)
                 ops.append(nodes.Operand('notin', self.parse_add()))
             else:
@@ -698,7 +702,6 @@ class Parser(object):
             arg = nodes.Const(attr_token.value, lineno=attr_token.lineno)
             return nodes.Getitem(node, arg, 'load', lineno=token.lineno)
         if token.type == 'lbracket':
-            priority_on_attribute = False
             args = []
             while self.stream.current.type != 'rbracket':
                 if args:
@@ -772,7 +775,7 @@ class Parser(object):
             else:
                 ensure(dyn_args is None and dyn_kwargs is None)
                 if self.stream.current.type == 'name' and \
-                    self.stream.look().type == 'assign':
+                   self.stream.look().type == 'assign':
                     key = self.stream.current.value
                     self.stream.skip(2)
                     value = self.parse_expression()
@@ -825,11 +828,11 @@ class Parser(object):
         kwargs = []
         if self.stream.current.type == 'lparen':
             args, kwargs, dyn_args, dyn_kwargs = self.parse_call(None)
-        elif self.stream.current.type in ('name', 'string', 'integer',
-                                          'float', 'lparen', 'lbracket',
-                                          'lbrace') and not \
-             self.stream.current.test_any('name:else', 'name:or',
-                                          'name:and'):
+        elif (self.stream.current.type in ('name', 'string', 'integer',
+                                           'float', 'lparen', 'lbracket',
+                                           'lbrace') and not
+              self.stream.current.test_any('name:else', 'name:or',
+                                           'name:and')):
             if self.stream.current.test('name:is'):
                 self.fail('You cannot chain multiple tests with is')
             args = [self.parse_expression()]

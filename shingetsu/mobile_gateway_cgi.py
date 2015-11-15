@@ -44,7 +44,6 @@ from http.cookies import SimpleCookie
 import mimetypes
 from . import attachutil
 
-
 class CGI(mobile_gateway.CGI):
 
     """Class for /m.cgi."""
@@ -137,10 +136,6 @@ class CGI(mobile_gateway.CGI):
                 return
 
             self.print302(uri)
-        elif path == 'home':
-            self.print_home()
-        elif path == 'sidebar':
-            self.print_sidebar()
         elif path == 'threads':
             self.print_threads()
         elif re.search(r"^thread/[^/]+$", path):
@@ -182,40 +177,11 @@ class CGI(mobile_gateway.CGI):
         #self.print_new_element_form()
         #self.footer()
 
-    def print_sidebar(self):
-        var = { 'logo': self.message['logo'] }
-        self.stdout.write(self.template('mobile_sidebar', var))
-
-    def print_home(self):
-        message = self.message
-        cachelist = CacheList()
-        cachelist.sort(key=lambda x: x.valid_stamp, reverse=True)
-        now = int(time.time())
-        output_cachelist = []
-        for cache in cachelist:
-            if now <= cache.valid_stamp + config.top_recent_range:
-                output_cachelist.append(cache)
-        #self.header(message['logo'] + ' - ' + message['description'])
-        var = {
-            'cachelist': output_cachelist,
-            'target': 'changes',
-            'taglist': UserTagList(),
-            'mch_url': self.mch_url(),
-            'mch_categories': self.mch_categories()
-        }
-
-        self.stdout.write(self.template('mobile_home', var))
-        #self.print_new_element_form()
-        #self.footer()
-
     def print_thread(self, path, id='', page=0):
         str_path = self.str_encode(path)
         file_path = self.file_encode('thread', path)
         form = cgi.FieldStorage(environ=self.environ, fp=self.stdin)
         cache = Cache(file_path)
-        #if id and form.getfirst('ajax'):
-        #    self.print_thread_ajax(path, id, form)
-        #    return
         if cache.has_record():
             pass
         elif self.check_get_cache():
@@ -227,8 +193,19 @@ class CGI(mobile_gateway.CGI):
         else:
             self.print404(id=id)
             return
+
+        ajax = form.getfirst('ajax')
+        if id and ajax:
+            self.stdout.write("Content-Type: text/html; charset=UTF-8\n\n");
+            for k in list(cache.keys()):
+                rec = cache[k]
+                if ((not id) or (rec.id[:8] == id)) and rec.load_body():
+                    self.print_record(cache, rec, path, str_path, False, ajax)
+            self.stdout.write("<script>initializeAnchors();</script>")
+            return
+
+        access = None
         if config.use_cookie and len(cache) and (not id) and (not page):
-            access = None
             try:
                 cookie = SimpleCookie(self.environ.get('HTTP_COOKIE', ''))
                 if 'access' in cookie:
@@ -255,6 +232,8 @@ class CGI(mobile_gateway.CGI):
         page_size = config.thread_page_size
         num_pages = int((len(ids) + page_size - 1) / page_size)
         var = {
+            'id': id,
+            'cookie': newcookie,
             'page_title': path + ' - ' + self.message['logo'],
             'path': path,
             'str_path': str_path,
@@ -279,7 +258,10 @@ class CGI(mobile_gateway.CGI):
         for k in inrange:
             rec = cache[k]
             if ((not id) or (rec.id[:8] == id)) and rec.load_body():
-                self.print_record(cache, rec, path, str_path)
+                new_record = True
+                if (access and int(access) >= rec.stamp) or id or page != 0:
+                    new_record = False
+                self.print_record(cache, rec, path, str_path, new_record, False)
                 printed = True
             rec.free()
         #self.stdout.write("</dl>\n")
@@ -289,6 +271,7 @@ class CGI(mobile_gateway.CGI):
         suffixes.sort()
         var = {
             'path': path,
+            'id': id,
             'str_path': str_path,
             'cache': cache,
             'lastrec': lastrec,
@@ -313,7 +296,7 @@ class CGI(mobile_gateway.CGI):
         now = int(time.time())
         expires = time.strftime('%a, %d %b %Y %H:%M:%S GMT',
                                 time.gmtime(now + config.save_cookie))
-        path = self.thread_cgi + '/' + \
+        path = self.mobile_gateway_cgi + '/thread/' + \
                   self.str_encode(self.file_decode(cache.datfile))
         cookie = SimpleCookie()
         cookie['access'] = str(now)
@@ -324,7 +307,7 @@ class CGI(mobile_gateway.CGI):
             cookie['tmpaccess']['path'] = '/'
         return cookie
 
-    def print_record(self, cache, rec, path, str_path):
+    def print_record(self, cache, rec, path, str_path, new_record, ajax):
         thumbnail_size = None
         if 'attach' in rec:
             attach_file = rec.attach_path()
@@ -345,8 +328,9 @@ class CGI(mobile_gateway.CGI):
             body = rec['body']
         else:
             body = ''
-        body = self.html_format(body, self.thread_cgi, path)
+        body = self.html_format(body, self.mobile_gateway_cgi + self.sep + 'thread', path)
         var = {
+            'ajax': ajax,
             'cache': cache,
             'rec': rec,
             'sid': rec['id'][:8],
@@ -358,6 +342,7 @@ class CGI(mobile_gateway.CGI):
             'body': body,
             'res_anchor': self.res_anchor,
             'thumbnail': thumbnail_size,
+            'new_record': new_record,
         }
         self.stdout.write(self.template('mobile_record', var))
 

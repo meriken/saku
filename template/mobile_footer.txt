@@ -1,10 +1,12 @@
     </div>
 
-    <footer class="footer">
+    <!--
+	<footer class="footer">
       <div class="container">
         <p class="text-muted">Place sticky footer content here.</p>
       </div>
     </footer>
+	-->
 
 <!-- The Bootstrap Image Gallery lightbox, should be a child element of the document body -->
 <div id="blueimp-gallery" class="blueimp-gallery">
@@ -41,5 +43,6 @@
     </div>
 </div>
 
-  </body>
+	<a id="page-bottom"></a>
+	</body>
 </html>

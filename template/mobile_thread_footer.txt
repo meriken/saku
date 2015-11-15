@@ -1,23 +1,29 @@
-<div class="dropdown" style="margin-bottom:10px;">
-	<button class='btn btn-default dropdown-toggle' type='button' data-toggle='dropdown' style='border-radius:4px;'>
-		{% if page == 0 %}最新ページ{% else %}{{page}}ページ前{% endif %}(全{{num_pages}}ページ)
-		<span class="caret"></span>
-	</button>
-	<ul class="dropdown-menu">
-		{% for n in range(0,num_pages) %}
-		<li>{% if n == 0 %}<a href="{{mobile_gateway_cgi}}/thread/{{path}}">最新ページ{% else %}<a href="{{mobile_gateway_cgi}}/thread/{{path}}/p{{n}}">{{n}}ページ前{% endif %}</a></li>
-		{% endfor %}
-	</ul>		
-</div>
-
-<div style="margin-bottom:10px;">
-	<div class="btn-group" style="block:inline;" style="margin-bottom:10px;">
-		{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path}}/p0"                {% endif %}><span class="glyphicon glyphicon-backward"></span></a>
-		{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path}}/p{{page - 1}}"     {% endif %}><span class="glyphicon glyphicon-triangle-left"></span> 次ページ</a>
-		{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path}}/p{{page + 1}}"     {% endif %}>前ページ <span class="glyphicon glyphicon-triangle-right"></span></a>
-		{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path}}/p{{num_pages - 1}}"{% endif %}><span class="glyphicon glyphicon-forward"></span></a>
+{% if not id %}
+	<div style="margin-bottom:10px;display:inline-block;" >
+		<div class="btn-group">
+			{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}"                                           {% endif %}><span class="glyphicon glyphicon-backward"></span></a>
+			{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}{% if page > 1 %}/p{{page - 1}}{% endif %}" {% endif %}><span class="glyphicon glyphicon-triangle-left"></span> 次ページ</a>
+			{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}/p{{page + 1}}"                             {% endif %}>前ページ <span class="glyphicon glyphicon-triangle-right"></span></a>
+			{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}/p{{num_pages - 1}}"                        {% endif %}><span class="glyphicon glyphicon-forward"></span></a>
+		</div>
 	</div>
-</div>
+
+	<div class="dropdown" style="display:inline-block;margin-bottom:10px;">
+		<button class='btn btn-default dropdown-toggle' type='button' data-toggle='dropdown' style='border-radius:4px;'>
+			{% if page == 0 %}最新ページ{% else %}{{page}}ページ前{% endif %}(全{{num_pages}}ページ)
+			<span class="caret"></span>
+		</button>
+		<ul class="dropdown-menu">
+			{% for n in range(0,num_pages) %}
+			<li>{% if n == 0 %}<a href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}">最新ページ{% else %}<a href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}/p{{n}}">{{n}}ページ前{% endif %}</a></li>
+			{% endfor %}
+		</ul>		
+	</div>
+
+	<div style="display:inline-block;margin-bottom:10px;">
+		<a href="#page-top" class='btn btn-default' style=''>最初</a>
+	</div>
+{% endif %}
 
 {#
 {% if isadmin %}
@@ -27,51 +33,6 @@
   </form>
 {% endif %}
 #}
-
-<style>
-	.input-wrapper {
-		border: 1px solid lightgrey;
-		border-radius: 4px;
-		display: block;
-		margin-bottom: 10px;
-	}
-	.wrapped-input {
-		border-radius: 0 0;
-		border-top: none;
-		border-left: none;
-		border-right: none;
-		border-bottom: 1px solid lightgrey;
-	}
-	.wrapped-input:last-child {
-		border-bottom: none;
-	}
-	.no-border {
-		border: none;
-		border-radius: 0;
-		box-shadow: none;
-	}
-	.btn-file {
-		position: relative;
-		overflow: hidden;
-		text-align: left;
-		color: gray;
-	}
-	.btn-file input[type=file] {
-		position: absolute;
-		top: 0;
-		right: 0;
-		min-width: 100%;
-		min-height: 100%;
-		font-size: 100px;
-		text-align: right;
-		filter: alpha(opacity=0);
-		opacity: 0;
-		outline: none;
-		background: white;
-		cursor: inherit;
-		display: block;
-	}
-</style>
 
 <form id="postarticle" name="postarticle" method="post" action="{{mobile_gateway_cgi}}" enctype="multipart/form-data" role="form">
 	<div>
@@ -96,7 +57,8 @@
 			<div class="wrapped-input input-group">
 				<span class="no-border input-group-addon"><span class="glyphicon glyphicon-file"></span></span>
 					<span class="no-border btn btn-block btn-default btn-file">
-						添付ファイル<input type="file" multiple="" name="attach" id="attach">
+						<img alt="" src="" style="max-height:80px;max-width:80px;"><span id="attachment-file-name">添付ファイル</span>
+						<input type="file" multiple="" name="attach" id="attach">
 					</span>
 			</div>
 			<textarea rows="5" name="body" id="body" class="no-border wrapped-input form-control" placeholder="{{message.post_body}}"></textarea>
@@ -144,6 +106,89 @@
 			</label>
 			</div>
 		#}
-
 	</div>
 </form>
+
+<script>
+	$( document ).ready(function() {
+		if ($(".new-record").length > 0 && $(".old-record").length > 0) {
+			setTimeout(function() { $('html, body').scrollTop($(".new-record").offset().top - $('.navbar-header').height() - 10); }, 500);
+		}
+	});
+
+	// For attachment
+	$(document).on('change', '.btn-file :file', function() {
+		var file = $(this).get(0).files[0];
+		var preview = $(this).parent().children('img');
+		var preview_label = $(this).parent().children('span');
+		var numFiles = $(this).get(0).files ? $(this).get(0).files.length : 1;
+		var label = $(this).val().replace(/\\/g, '/').replace(/.*\//, '');
+		if ($(this).val() && file.type.match('image.*')) {
+			var fileRdr = new FileReader();
+			fileRdr.onload = function() {
+				preview.attr('src', fileRdr.result);
+			}
+			fileRdr.readAsDataURL(file);
+			preview_label.html("<br />" + escape(label)).css('color', 'black');
+		} else if ($(this).val()) {
+			preview.attr('src', "");
+			preview_label.html(escape(label)).css('color', 'black');
+		} else {
+			preview.attr('src', "");
+			preview_label.html('添付ファイル').css('color', 'gray');
+		}
+	});
+
+	function initializeAnchors() {
+		$('.anchor')
+			.tooltip({
+				trigger: 'manual',
+				title: anchorHoverGetData,
+				html: true,
+				container: 'body',
+				placement: 'bottom'
+			})
+			.unbind("click")
+			.unbind("touchstart")
+			.click(function (e) { e.stopPropagation(); $(this).tooltip('toggle'); })
+			.bind("touchstart", function (e) { e.stopPropagation();});
+		$('.tooltip-inner')
+			.unbind("click")
+			.unbind("touchstart")
+			.click(function (e) { e.stopPropagation(); })
+			.bind("touchstart", function (e) { e.stopPropagation(); });
+	}
+	initializeAnchors();
+
+	$( document ).ready(function() {
+		$('html, body')
+			.click(function () { $('.anchor').tooltip('hide'); })
+			.bind("touchstart", function () { $('.anchor').tooltip('hide'); });
+	});
+
+
+	var cachedData = Array();
+	function anchorHoverGetData(){
+		var element = $(this);
+
+		var href = element.attr('data-href');
+
+		if(href in cachedData){
+			return cachedData[href];
+		}
+
+		var localData = "error";
+
+		$.ajax(href, {
+			async: false,
+			success: function(data){
+				localData = data;
+			}
+		});
+
+		cachedData[href] = localData;
+
+		return localData;
+	}
+
+</script>

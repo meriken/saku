@@ -1,22 +1,73 @@
-<h2 style="">{{path}}</h2>
+<style>
+	.input-wrapper {
+		border: 1px solid lightgrey;
+		border-radius: 4px;
+		display: block;
+		margin-bottom: 10px;
+	}
+	.wrapped-input {
+		border-radius: 0 0;
+		border-top: none;
+		border-left: none;
+		border-right: none;
+		border-bottom: 1px solid lightgrey;
+	}
+	.wrapped-input:last-child {
+		border-bottom: none;
+	}
+	.no-border {
+		border: none;
+		border-radius: 0;
+		box-shadow: none;
+	}
+	.btn-file {
+		position: relative;
+		overflow: hidden;
+		text-align: left;
+		color: gray;
+	}
+	.btn-file input[type=file] {
+		position: absolute;
+		top: 0;
+		right: 0;
+		min-width: 100%;
+		min-height: 100%;
+		font-size: 100px;
+		text-align: right;
+		filter: alpha(opacity=0);
+		opacity: 0;
+		outline: none;
+		background: white;
+		cursor: inherit;
+		display: block;
+	}
+</style>
 
-<div class="dropdown" style="margin-bottom:10px;">
-	<button class='btn btn-default dropdown-toggle' type='button' data-toggle='dropdown' style='border-radius:4px;'>
-		{% if page == 0 %}最新ページ{% else %}{{page}}ページ前{% endif %}(全{{num_pages}}ページ)
-		<span class="caret"></span>
-	</button>
-	<ul class="dropdown-menu">
-		{% for n in range(0,num_pages) %}
-		<li>{% if n == 0 %}<a href="{{mobile_gateway_cgi}}/thread/{{path}}">最新ページ{% else %}<a href="{{mobile_gateway_cgi}}/thread/{{path}}/p{{n}}">{{n}}ページ前{% endif %}</a></li>
-		{% endfor %}
-	</ul>		
-</div>
+<h2><a href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}" style="color:black;">{{path}}</a></h2>
 
-<div style="margin-bottom:10px;">
-	<div class="btn-group" style="block:inline;" style="margin-bottom:10px;">
-		{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path}}/p0"                {% endif %}><span class="glyphicon glyphicon-backward"></span></a>
-		{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path}}/p{{page - 1}}"     {% endif %}><span class="glyphicon glyphicon-triangle-left"></span> 次ページ</a>
-		{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path}}/p{{page + 1}}"     {% endif %}>前ページ <span class="glyphicon glyphicon-triangle-right"></span></a>
-		{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path}}/p{{num_pages - 1}}"{% endif %}><span class="glyphicon glyphicon-forward"></span></a>
+{% if not id %}
+	<div style="margin-bottom:10px;display:inline-block;" >
+		<div class="btn-group">
+			{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}"                                           {% endif %}><span class="glyphicon glyphicon-backward"></span></a>
+			{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}{% if page > 1 %}/p{{page - 1}}{% endif %}" {% endif %}><span class="glyphicon glyphicon-triangle-left"></span> 次ページ</a>
+			{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}/p{{page + 1}}"                             {% endif %}>前ページ <span class="glyphicon glyphicon-triangle-right"></span></a>
+			{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}/p{{num_pages - 1}}"                        {% endif %}><span class="glyphicon glyphicon-forward"></span></a>
+		</div>
 	</div>
-</div>
+
+	<div class="dropdown" style="display:inline-block;margin-bottom:10px;">
+		<button class='btn btn-default dropdown-toggle' type='button' data-toggle='dropdown' style='border-radius:4px;'>
+			{% if page == 0 %}最新ページ{% else %}{{page}}ページ前{% endif %}(全{{num_pages}}ページ)
+			<span class="caret"></span>
+		</button>
+		<ul class="dropdown-menu">
+			{% for n in range(0,num_pages) %}
+			<li>{% if n == 0 %}<a href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}">最新ページ{% else %}<a href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}/p{{n}}">{{n}}ページ前{% endif %}</a></li>
+			{% endfor %}
+		</ul>		
+	</div>
+
+	<div style="display:inline-block;margin-bottom:10px;">
+		<a href="#page-bottom" class='btn btn-default' style=''>最後</a>
+	</div>
+{% endif %}
