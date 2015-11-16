@@ -197,11 +197,17 @@ class CGI(mobile_gateway.CGI):
         ajax = form.getfirst('ajax')
         if id and ajax:
             self.stdout.write("Content-Type: text/html; charset=UTF-8\n\n");
+
+            found = False
             for k in list(cache.keys()):
                 rec = cache[k]
                 if ((not id) or (rec.id[:8] == id)) and rec.load_body():
                     self.print_record(cache, rec, path, str_path, False, ajax)
-            self.stdout.write("<script>initializeAnchors();</script>")
+                    found = True
+            if found:
+                self.stdout.write("<script>initializeAnchors();</script>")
+            else:
+                self.stdout.write("レスが見つかりません")
             return
 
         access = None

@@ -43,7 +43,7 @@
 	}
 </style>
 
-<h2><a href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}" style="color:black;">{{path}}</a></h2>
+<h3><a href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}" style="color:black;">{{path}}</a></h3>
 
 {% if not id %}
 	<div style="margin-bottom:10px;display:inline-block;" >

@@ -1,14 +1,14 @@
-<div class="scrollable" ui-state="searchBar">
-  <input
-    type="search"
-    class="form-control scrollable-header"
-    placeholder="題名で検索" style="margin-bottom:10px;" />
+<h3>スレッド一覧 (更新順)</h3>
+	
+<input
+	type="search"
+	class="form-control scrollable-header"
+	placeholder="題名で検索" style="margin-bottom:10px;" />
 
-    <div class="list-group">
-  {% for cache in cachelist %}
-    {% if cache.type == type %}
-        {{make_list_item(cache, target=target, search=search_new_file)}}
-    {% endif %}
-  {% endfor %}
-    </div>
+<div class="list-group">
+	{% for cache in cachelist %}
+		{% if cache.type == type %}
+			{{make_list_item(cache, target=target, search=search_new_file)}}
+		{% endif %}
+	{% endfor %}
 </div>

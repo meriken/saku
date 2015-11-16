@@ -7,11 +7,11 @@ Content-Type: text/html; charset=UTF-8
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="viewport" content="initial-scale = 1.0,maximum-scale = 1.0" />
+
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" href="../../favicon.ico">
+    <link rel="icon" href="/favicon.ico">
 
     <title>{{page_title}}</title>
 
@@ -30,7 +30,7 @@ Content-Type: text/html; charset=UTF-8
     ================================================== -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="/bootstrap/js/bootstrap.min.js"></script>
-    <script>$(function () {  $('[data-toggle="tooltip"]').tooltip(); })</script>
+    <script>$(function () {  $('[data-toggle="tooltip"]').tooltip(); });</script>
 	<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="http://getbootstrap.com/assets/js/ie10-viewport-bug-workaround.js"></script>
 <script src="/blueimp-gallery/js/jquery.blueimp-gallery.min.js"></script>
@@ -54,6 +54,7 @@ Content-Type: text/html; charset=UTF-8
 	.panel {
 		margin-bottom: 10px;
 		overflow: hidden;
+		z-index: -1;
 	}
 
 	a {
@@ -65,7 +66,10 @@ Content-Type: text/html; charset=UTF-8
 	  padding: 65px 15px 10px;
 	}
 
-	body > .container > h2:first-child {
+	body > .container > h2:first-child,
+	body > .container > h3:first-child,
+	body > .container > h3:nth-child(1),
+	body > .container > h3:nth-child(2) {
 	  margin-top: 0px;
 	}
 
@@ -101,6 +105,14 @@ Content-Type: text/html; charset=UTF-8
 	.tooltip-inner > .anchor {
 		background-color: #ebebc4;
 		border: solid 1px #cc0;
+	}
+
+	.dropdown-menu {
+		position:fixed;
+	}
+
+	textarea {
+		resize: vertical;
 	}
 </style>
   </head>

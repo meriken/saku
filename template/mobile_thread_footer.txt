@@ -129,10 +129,10 @@
 				preview.attr('src', fileRdr.result);
 			}
 			fileRdr.readAsDataURL(file);
-			preview_label.html("<br />" + escape(label)).css('color', 'black');
+			preview_label.html("<br />" + decodeURIComponent(escape(label)) + ' (' + Math.round($(this).get(0).files[0].size / 1024) + 'KB)').css('color', 'black');
 		} else if ($(this).val()) {
 			preview.attr('src', "");
-			preview_label.html(escape(label)).css('color', 'black');
+			preview_label.html(escape(decodeURIComponent(label))).css('color', 'black');
 		} else {
 			preview.attr('src', "");
 			preview_label.html('添付ファイル').css('color', 'gray');
@@ -150,45 +150,103 @@
 			})
 			.unbind("click")
 			.unbind("touchstart")
-			.click(function (e) { e.stopPropagation(); $(this).tooltip('toggle'); })
-			.bind("touchstart", function (e) { e.stopPropagation();});
+			.bind("touchstart", function (e) { e.stopPropagation();})
+			.click(function (e) { e.stopPropagation(); $(this).tooltip('toggle'); });
 		$('.tooltip-inner')
 			.unbind("click")
 			.unbind("touchstart")
-			.click(function (e) { e.stopPropagation(); })
-			.bind("touchstart", function (e) { e.stopPropagation(); });
+			.bind("touchstart", function (e) { e.stopPropagation(); })
+			.click(function (e) { e.stopPropagation(); });
 	}
 	initializeAnchors();
 
+	function initializePostMenus() {
+		$('.post-menu-reply')
+			.unbind("click")
+			.unbind("touchstart")
+			.bind("touchstart", function (e) { e.stopPropagation();})
+			.click(function (e) { 
+				e.stopPropagation(); 
+				$(this).parent().parent().parent().children('.dropdown-toggle').dropdown('toggle');
+				$('#postarticle #body').val('>>' + $(this).attr('data-sid') +'\n' + $('#postarticle #body').val()).focus();
+				jumpToPostForm();
+			});
+		$('.post-menu-reply-with-quote')
+			.unbind("click")
+			.unbind("touchstart")
+			.bind("touchstart", function (e) { e.stopPropagation();})
+			.click(function (e) { 
+				var quote =  $.trim($('#r' + $(this).attr('data-sid') + ' .panel-body').text());
+				quote = (quote.length ? ('> ' + quote.replace(/\r?\n/g, '\n> ') + '\n\n') : '');
+				e.stopPropagation(); 
+				$(this).parent().parent().parent().children('.dropdown-toggle').dropdown('toggle');
+				$('#postarticle #body').val('>>' + $(this).attr('data-sid') +'\n' + quote + $('#postarticle #body').val()).focus();
+				jumpToPostForm();
+			});
+
+	}
+	initializePostMenus();
+
+	function jumpToPostForm() {
+		$(document).scrollTop($("#postarticle").offset().top - $('.navbar-header').outerHeight() - 10);
+	}
+	
 	$( document ).ready(function() {
+		$('.post-image').on('click', function (event) {
+			$('#blueimp-gallery').data('useBootstrapModal', false);
+			$('#blueimp-gallery').toggleClass('blueimp-gallery-controls', true);
+			event.preventDefault();
+			blueimp.Gallery(
+				[{
+					//title: '',
+					href: $(this).attr('src'),
+					//type: '',
+					//poster: ''
+				}], 
+				$('#blueimp-gallery').data());
+		});
+
 		$('html, body')
 			.click(function () { $('.anchor').tooltip('hide'); })
-			.bind("touchstart", function () { $('.anchor').tooltip('hide'); });
-	});
+			.bind("touchstart", function () { $('.anchor').tooltip('hide'); })
+			.on("dragenter", function(event) { event.preventDefault(); })
+			.on("dragover", function(event) { event.preventDefault(); })
+			.on("drop", function(event) {
+				event.stopPropagation();
+				event.preventDefault();
+				$('.btn-file :file')[0].files = event.originalEvent.dataTransfer.files;
+				setTimeout(jumpToPostForm, 200);
+				return false;
+			});
 
+		$('.dropdown-toggle').click(function (){
+			var button = $(this);
+			var dropdown = button.parent().children('.dropdown-menu');
+			var dropdownWidth = dropdown.width();
+			dropdown.css('top', button.offset().top - $('body').scrollTop() + button.outerHeight() + "px");
+			dropdown.css('left', button.offset().left - dropdown.outerWidth() + button.outerWidth() + "px");
+			dropdown.width(dropdownWidth);
+		});
+	});
 
 	var cachedData = Array();
 	function anchorHoverGetData(){
 		var element = $(this);
-
 		var href = element.attr('data-href');
 
-		if(href in cachedData){
+		if(href in cachedData)
 			return cachedData[href];
-		}
-
-		var localData = "error";
-
 		$.ajax(href, {
-			async: false,
-			success: function(data){
-				localData = data;
+			async: true,
+			success: function(data) {
+				if (typeof cachedData[href] == 'undefined') {
+					cachedData[href] = data;
+					$(element).data('tooltip',false)
+							  .tooltip({ trigger: 'manual',	title: data, html: true, container: 'body', placement: 'bottom' })
+							  .tooltip('show');
+				}
 			}
 		});
-
-		cachedData[href] = localData;
-
-		return localData;
+		return 'Loading...';
 	}
-
 </script>

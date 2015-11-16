@@ -2,7 +2,7 @@
 
 <p>
 	「{{message.logo}}」は<a href="http://shingetsu.info">新月ネットワーク</a>に参加している<a href="https://ja.wikipedia.org/wiki/Peer_to_Peer">P2P</a>匿名掲示版です。<br />
-	<a href="/gateway.cgi/motd">新月ネットワーク利用規約</a>を守った上で、自由に利用してください。</p>
+	<a href="/gateway.cgi/motd">新月ネットワーク利用規約</a>を守った上で、自由に利用してください。
 </p>
 
     <div class="list-group">
