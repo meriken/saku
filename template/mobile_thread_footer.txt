@@ -25,6 +25,14 @@
 	</div>
 {% endif %}
 
+{% if cache.tags %}
+	<div style="margin-bottom:10px;" >
+{% for tag in cache.tags %}
+  <a href="{{mobile_gateway_cgi}}/threads?tag={{tag  | urlencode}}" class="btn btn-success">{{tag}}</a>
+{% endfor %}
+	</div>
+{% endif %}
+
 {#
 {% if isadmin %}
   {% if cache %}
@@ -33,6 +41,15 @@
   </form>
 {% endif %}
 #}
+
+{% if related_threads %}
+<div class="list-group" style="margin-top:10px;">
+  <a class="list-group-item" style="background:#f5f5f5;">関連スレッド</a>
+  {% for cache in related_threads %}
+      {{make_list_item(cache, target='', search=False)}}
+  {% endfor %}
+</div>
+{% endif %}
 
 <form id="postarticle" name="postarticle" method="post" action="{{mobile_gateway_cgi}}" enctype="multipart/form-data" role="form">
 	<div>

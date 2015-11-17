@@ -1,4 +1,4 @@
-<h3>スレッド一覧 (更新順)</h3>
+<h3>スレッド一覧{% if tag %}<span style="white-space:nowrap;"> (タグ: {{tag}})</span>{% endif %}</h3>
 	
 <input
 	type="search"

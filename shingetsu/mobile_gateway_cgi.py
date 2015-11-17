@@ -44,6 +44,8 @@ from http.cookies import SimpleCookie
 import mimetypes
 from . import attachutil
 
+import random
+
 class CGI(mobile_gateway.CGI):
 
     """Class for /m.cgi."""
@@ -275,6 +277,14 @@ class CGI(mobile_gateway.CGI):
         escaped_path = re.sub(r'  ', '&nbsp;&nbsp;', escaped_path)
         suffixes = list(mimetypes.types_map.keys())
         suffixes.sort()
+        related_threads = None;
+        if len(cache.tags) > 0:
+            related_threads = CacheList()
+            try:
+                related_threads = [x for x in related_threads if ((str(x) != str(cache)) and len(set([str(t).lower() for t in cache.tags]) & set([str(t).lower() for t in x.tags])) > 0  )]
+            except ValueError:
+                pass
+            related_threads = random.sample(related_threads, min(5, len(related_threads)))
         var = {
             'path': path,
             'id': id,
@@ -286,6 +296,7 @@ class CGI(mobile_gateway.CGI):
             'num_pages': num_pages,
             'suffixes': suffixes,
             'limit': config.record_limit * 3 // 4,
+            'related_threads': related_threads,
         }
         #self.stdout.write(self.template('thread_bottom', var))
         self.stdout.write(self.template('mobile_thread_footer', var))

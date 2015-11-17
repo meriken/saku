@@ -45,9 +45,17 @@
 
 <h3><a href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}" style="color:black;">{{path}}</a></h3>
 
+{% if cache.tags %}
+	<div style="margin-bottom:10px;" >
+{% for tag in cache.tags %}
+  <a href="{{mobile_gateway_cgi}}/threads?tag={{tag  | urlencode}}" class="btn btn btn-success">{{tag}}</a>
+{% endfor %}
+	</div>
+{% endif %}
+
 {% if not id %}
 	<div style="margin-bottom:10px;display:inline-block;" >
-		<div class="btn-group">
+		<div class="btn-group btn-group">
 			{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}"                                           {% endif %}><span class="glyphicon glyphicon-backward"></span></a>
 			{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}{% if page > 1 %}/p{{page - 1}}{% endif %}" {% endif %}><span class="glyphicon glyphicon-triangle-left"></span> 次ページ</a>
 			{% if page >= num_pages - 1 %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}/p{{page + 1}}"                             {% endif %}>前ページ <span class="glyphicon glyphicon-triangle-right"></span></a>
