@@ -51,18 +51,18 @@
 				if(href in cachedData)
 					return cachedData[href];
 				$.ajax(href, {
-					async: true,
+					async: !showTooltip,
 					success: function(data) {
-						if (typeof cachedData[href] == 'undefined') {
+						if (typeof cachedData[href] == 'undefined')
 							cachedData[href] = data;
-							if (showTooltip) {
-								$(element).data('tooltip',false)
-										  .tooltip({ trigger: 'manual',	title: data, html: true, container: 'body', placement: 'bottom' })
-										  .tooltip('show');
-							}
+						if (showTooltip) {
+							$(element).data('tooltip',false)
+										.tooltip({ trigger: 'manual',	title: data, html: true, container: 'body', placement: 'bottom' })
+										.tooltip('show');
 						}
 					}
 				});
+				return cachedData[href];
 			}
 
 			function initializeAnchors() {

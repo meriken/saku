@@ -20,7 +20,7 @@ logo<>新月
 description<>P2P匿名掲示板
 site<>公式サイト
 status<>状態
-agreement<>ネットワーク利用規約
+agreement<>新月ネットワーク利用規約
 title<>タイトル
 recent_changes<>最近の更新
 all<>全部
@@ -64,7 +64,7 @@ search_new_file<>新しい掲示板を作るときに検索する
 create<>新規作成
 
 # thread
-anonymous<>名無しさん
+anonymous<>匿名利用者
 last_article<>最新の書き込み
 top_of_page<>ページの先頭
 bottom_of_page<>ページの下

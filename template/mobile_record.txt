@@ -12,11 +12,15 @@
 			<span style="top:3px;" class="glyphicon glyphicon-barcode"></span>
 			<a href="{{mobile_gateway_cgi}}/thread/{{str_path}}/{{sid}}" class="id" id="i{{sid}}" style="color:black;font-family:'Courier New',monotype;word-break:keep-all;white-space:nowrap;">{{sid}}</a>
 			&nbsp;
+
+{% if rec.get('name', '') or rec.get('mail', '') or rec.get('pubkey', '') %}
 			<span style="word-break:keep-all;white-space:nowrap;">
 {% if rec.get('name', '') %}
-				<span class="name"><span style="top:2px;" class="glyphicon glyphicon-user"></span><span style="color:green;font-weight:bold;">{{rec.name}}</span></span>
+				<span class="name"><span style="top:2px;" class="glyphicon glyphicon-user"></span><span style="">{{rec.name}}</span></span>
+{#
 {% else %}
-				<span class="name"><span style="top:2px;" class="glyphicon glyphicon-user"></span><span style="color:green;font-weight:bold;">{{message.anonymous}}</span></span>
+				<span class="name"><span style="top:2px;" class="glyphicon glyphicon-user"></span><span style="">{{message.anonymous}}</span></span>
+#}
 {% endif %}
 {% if rec.get('mail', '') %}
 				[{{rec.mail}}]
@@ -26,13 +30,15 @@
 {% endif %}
 			</span>
 			&nbsp;
+{% endif %}
+
 			<span style="word-break:keep-all;white-space:nowrap;">
 				<span style="top:2px;" class="glyphicon glyphicon-time"></span>
-				<span class="stamp" data-stamp="{{rec.stamp}}" style="color:gray;word-break:keep-all;">{{localtime(rec.stamp)}}</span>
+				<span class="stamp" data-stamp="{{rec.stamp}}" style="color:black;word-break:keep-all;">{{localtime(rec.stamp)}}</span>
 			</span>
 			&nbsp;
 			{% if 'attach' in rec %}
-			<span style="word-break:keep-all;white-space:nowrap;">
+			<span style="color:black;;word-break:keep-all;white-space:nowrap;">
 				<span class="glyphicon glyphicon-file"></span>
 				<a href="{{thread_cgi}}/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}">{{rec.stamp}}.{{suffix}}</a>
 				({{attach_size//1024}}{{message.kb}})

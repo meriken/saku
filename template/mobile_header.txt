@@ -74,9 +74,15 @@ Content-Type: text/html; charset=UTF-8
 	  margin-top: 0px;
 	}
 
+	.panel-heading {
+		font-size: 14px;
+	}
+
 	input {
 		max-width: 1;
 	} 
+
+
 
 	.tooltip.in {
 		opacity: 1;
