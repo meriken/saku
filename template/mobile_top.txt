@@ -10,4 +10,8 @@
 		  スレッド一覧
 		  <span class="glyphicon glyphicon-chevron-right pull-right"></span>
 		</a>
+		<a href="{{mobile_gateway_cgi}}/new-posts" class="list-group-item">
+		  新着レスまとめ読み
+		  <span class="glyphicon glyphicon-chevron-right pull-right"></span>
+		</a>
     </div>

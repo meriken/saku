@@ -586,7 +586,7 @@ class CGI(basecgi.CGI):
         return text.replace('"', r'\"').replace(']]>', '');
 
     def make_list_item(self, cache,
-                       remove=True, target='changes', search=False):
+                       remove=True, target='changes', search=False, cookie=None):
         x = self.file_decode(cache.datfile)
         if not x:
             return ''
@@ -618,6 +618,14 @@ class CGI(basecgi.CGI):
             for st in cache.sugtags:
                 if str(st).lower() not in str_tags:
                     sugtags.append(st)
+        new_posts = False
+        viewed = False
+        file_path = self.file_encode('thread', x)
+        if cookie and 'access_' + file_path in cookie:
+            viewed = True
+            new_posts = True
+            if 'access_new_posts' in cookie and cache.valid_stamp <= int(cookie['access_new_posts'   ].value): new_posts = False
+            if 'access_' + file_path in cookie and cache.valid_stamp <= int(cookie['access_' + file_path].value): new_posts = False
         var = {
             'cache': cache,
             'title': x,
@@ -627,6 +635,8 @@ class CGI(basecgi.CGI):
             'target': target,
             'remove': remove,
             'str_opts': str_opts,
+            'viewed': viewed,
+            'new_posts': new_posts,
         }
         return self.template('mobile_list_item', var)
 

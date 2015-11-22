@@ -33,19 +33,20 @@ Content-Type: text/html; charset=UTF-8
     <script>$(function () {  $('[data-toggle="tooltip"]').tooltip(); });</script>
 	<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="http://getbootstrap.com/assets/js/ie10-viewport-bug-workaround.js"></script>
-<script src="/blueimp-gallery/js/jquery.blueimp-gallery.min.js"></script>
-<script src="/bootstrap-image-gallery/js/bootstrap-image-gallery.js"></script>
+	<script src="/blueimp-gallery/js/jquery.blueimp-gallery.min.js"></script>
+	<script src="/bootstrap-image-gallery/js/bootstrap-image-gallery.js"></script>
+	<script src="/jquery/jquery.hoverIntent.js"></script>
 <style>
 	html {
 		overflow: -moz-scrollbars-vertical; 
 		overflow-y: scroll;
 
-		    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
 	}
 
 	body {
@@ -133,8 +134,9 @@ Content-Type: text/html; charset=UTF-8
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="{{mobile_gateway_cgi}}">トップ</a></li>
+            <li{# class="active" #}><a href="{{mobile_gateway_cgi}}">目次</a></li>
             <li><a href="{{mobile_gateway_cgi}}/threads">スレッド一覧</a></li>
+            <li><a href="{{mobile_gateway_cgi}}/new-posts">新着レスまとめ読み</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>

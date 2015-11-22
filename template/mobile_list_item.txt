@@ -40,7 +40,7 @@
 
 
 
-<a href="{{mobile_gateway_cgi}}/thread/{{title | urlencode}}" class="list-group-item">
+<a href="{{mobile_gateway_cgi}}/thread/{{title | urlencode}}" class="list-group-item" {% if new_posts %}style="background-color:#fee"{% elif viewed %}style="background-color:#eef"{% endif %}>
   {{title}} ({{cache.__len__()}}){# <small>{{localtime(cache.valid_stamp)}}</small> #}
   <span class="glyphicon glyphicon-chevron-right pull-right"></span>
 </a>

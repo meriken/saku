@@ -1,49 +1,166 @@
-    </div>
+	    </div>
 
-    <!--
-	<footer class="footer">
-      <div class="container">
-        <p class="text-muted">Place sticky footer content here.</p>
-      </div>
-    </footer>
-	-->
-
-<!-- The Bootstrap Image Gallery lightbox, should be a child element of the document body -->
-<div id="blueimp-gallery" class="blueimp-gallery">
-    <!-- The container for the modal slides -->
-    <div class="slides"></div>
-    <!-- Controls for the borderless lightbox -->
-    <h3 class="title"></h3>
-    <a class="prev">‹</a>
-    <a class="next">›</a>
-    <a class="close">×</a>
-    <a class="play-pause"></a>
-    <ol class="indicator"></ol>
-    <!-- The modal dialog, which will be used to wrap the lightbox content -->
-    <div class="modal fade">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title"></h4>
-                </div>
-                <div class="modal-body next"></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default pull-left prev">
-                        <i class="glyphicon glyphicon-chevron-left"></i>
-                        Previous
-                    </button>
-                    <button type="button" class="btn btn-primary next">
-                        Next
-                        <i class="glyphicon glyphicon-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-		
+		<!-- The Bootstrap Image Gallery lightbox, should be a child element of the document body -->
+		<div id="blueimp-gallery" class="blueimp-gallery">
+			<!-- The container for the modal slides -->
+			<div class="slides"></div>
+			<!-- Controls for the borderless lightbox -->
+			<h3 class="title"></h3>
+			<a class="prev">‹</a>
+			<a class="next">›</a>
+			<a class="close">×</a>
+			<a class="play-pause"></a>
+			<ol class="indicator"></ol>
+			<!-- The modal dialog, which will be used to wrap the lightbox content -->
+			<div class="modal fade">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" aria-hidden="true">&times;</button>
+							<h4 class="modal-title"></h4>
+						</div>
+						<div class="modal-body next"></div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default pull-left prev">
+								<i class="glyphicon glyphicon-chevron-left"></i>
+								Previous
+							</button>
+							<button type="button" class="btn btn-primary next">
+								Next
+								<i class="glyphicon glyphicon-chevron-right"></i>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 		
 		<a id="page-bottom"></a>
+
+		<script>
+			var cachedData = Array();
+			function anchorHoverGetData(element) {
+				var showTooltip = false;
+				if (typeof element == 'undefined') {
+					element = this;
+					showTooltip = true;
+				}
+				
+				var href = $(element).attr('data-href');
+
+				if(href in cachedData)
+					return cachedData[href];
+				$.ajax(href, {
+					async: true,
+					success: function(data) {
+						if (typeof cachedData[href] == 'undefined') {
+							cachedData[href] = data;
+							if (showTooltip) {
+								$(element).data('tooltip',false)
+										  .tooltip({ trigger: 'manual',	title: data, html: true, container: 'body', placement: 'bottom' })
+										  .tooltip('show');
+							}
+						}
+					}
+				});
+			}
+
+			function initializeAnchors() {
+				$('.anchor')
+					.tooltip({
+						trigger: 'manual',
+						title: anchorHoverGetData,
+						html: true,
+						container: 'body',
+						placement: 'bottom'
+					})
+					.unbind("click")
+					.unbind("mousedown")
+					.unbind("mouseup")
+					.unbind("touchstart")
+					.unbind("touchend")
+					.bind("mousedown", function (e) { e.stopPropagation(); })
+					.bind("mouseup", function (e) { e.stopPropagation(); })
+					.bind("touchstart", function (e) { e.stopPropagation(); })
+					.bind("touchend", function (e) { e.stopPropagation(); })
+					.click(function (e) { e.stopPropagation(); $(this).tooltip('toggle'); })
+					.hoverIntent(function (e) { $(this).tooltip('show'); }, function (e) {})
+					;
+				$('.tooltip-inner')
+					.unbind("click")
+					.unbind("mousedown")
+					.unbind("mouseup")
+					.unbind("touchstart")
+					.unbind("touchend")
+					.bind("mousedown", function (e) { e.stopPropagation(); })
+					.bind("mouseup", function (e) { e.stopPropagation(); })
+					.bind("touchstart", function (e) { e.stopPropagation(); })
+					.bind("touchend", function (e) { e.stopPropagation(); })
+					.click(function (e) { e.stopPropagation(); });
+				$(".anchor").each(function( index, element ) {
+					anchorHoverGetData(element);
+					return true;
+				});
+			}
+			initializeAnchors();
+			$(document)
+				.bind("mouseup", function (e) { e.stopPropagation(); $('.anchor').tooltip('hide'); $('.tooltip').remove(); })
+				.bind("touchend", function (e) { e.stopPropagation(); $('.anchor').tooltip('hide'); $('.tooltip').remove(); });
+			$(function () {
+				var currentMousePos = { x: -1, y: -1 };
+				$(document).mousemove(function(event) {
+					currentMousePos.x = event.pageX;
+					currentMousePos.y = event.pageY;
+				});
+				var timer;
+				var fadeInBuffer = false;
+				$(document).mousemove(function () {
+					if (!fadeInBuffer) {
+						if (timer) {
+							clearTimeout(timer);
+							timer = 0;
+						}
+					} else {
+						fadeInBuffer = false;
+					}
+
+					timer = setTimeout(function () {
+						fadeInBuffer = true;
+					    var elementMouseIsOver = $(document.elementFromPoint(currentMousePos.x - window.pageXOffset, currentMousePos.y - window.pageYOffset));
+						while (elementMouseIsOver.length > 0) {
+							if (elementMouseIsOver.hasClass('tooltip-inner') || elementMouseIsOver.hasClass('anchor'))
+								return;
+							elementMouseIsOver = elementMouseIsOver.parent();
+						}
+						$('.tooltip').remove();
+					}, 250)
+				});
+			});
+
+			$( document ).ready(function() {
+				$('.post-image').on('click', function (event) {
+					$('#blueimp-gallery').data('useBootstrapModal', false);
+					$('#blueimp-gallery').toggleClass('blueimp-gallery-controls', true);
+					event.preventDefault();
+					blueimp.Gallery(
+						[{
+							//title: '',
+							href: $(this).attr('src'),
+							//type: '',
+							//poster: ''
+						}], 
+						$('#blueimp-gallery').data());
+				});
+
+				$('.dropdown-toggle').click(function (){
+					var button = $(this);
+					var dropdown = button.parent().children('.dropdown-menu');
+					var dropdownWidth = dropdown.width();
+					dropdown.css('top', button.offset().top - $('body').scrollTop() + button.outerHeight() + "px");
+					dropdown.css('left', button.offset().left - dropdown.outerWidth() + button.outerWidth() + "px");
+					dropdown.width(dropdownWidth);
+				});
+			});
+		</script>
 	</body>
 </html>

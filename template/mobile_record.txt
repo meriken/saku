@@ -47,8 +47,8 @@
 				<span class="caret" style="margin-top:-3px;"></span>
 			</a>
 			<ul class="dropdown-menu">
-				<li><a id="post-{{sid}}-menu-reply"            class="post-menu-reply"            data-sid="{{sid}}">このレスに返信</a></li>
-				<li><a id="post-{{sid}}-menu-reply-with-quote" class="post-menu-reply-with-quote" data-sid="{{sid}}">このレスに返信(引用付き)</a></li>
+				<li><a id="post-{{sid}}-menu-reply"            class="post-menu-reply"            data-sid="{{sid}}" data-str-path="{{str_path}}">このレスに返信</a></li>
+				<li><a id="post-{{sid}}-menu-reply-with-quote" class="post-menu-reply-with-quote" data-sid="{{sid}}" data-str-path="{{str_path}}">このレスに返信(引用付き)</a></li>
 {% if ('attach' in rec) %}
 				<li role="separator" class="divider">Divider</li>
 				<li><a download href="{{mobile_gateway_cgi}}/thread/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}">添付ファイルを保存</a></li>

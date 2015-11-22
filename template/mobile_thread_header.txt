@@ -1,4 +1,12 @@
 <style>
+	.panel-body {
+		-webkit-touch-callout: default !important;
+		-webkit-user-select:  all !important;
+		-khtml-user-select: all;
+		-moz-user-select: all;
+		-ms-user-select: all;
+		user-select: all;
+	}
 	.input-wrapper {
 		border: 1px solid lightgrey;
 		border-radius: 4px;
@@ -45,6 +53,7 @@
 
 <h3><a href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}" style="color:black;">{{path}}</a></h3>
 
+{% if not id %}
 {% if cache.tags %}
 	<div style="margin-bottom:10px;" >
 {% for tag in cache.tags %}
@@ -52,8 +61,6 @@
 {% endfor %}
 	</div>
 {% endif %}
-
-{% if not id %}
 	<div style="margin-bottom:10px;display:inline-block;" >
 		<div class="btn-group btn-group">
 			{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}"                                           {% endif %}><span class="glyphicon glyphicon-backward"></span></a>

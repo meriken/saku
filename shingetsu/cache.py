@@ -628,7 +628,7 @@ class Cache(dict):
         """Get data in range."""
         oldcount = len(self)
         now = int(time())
-        if self.stamp > 0:
+        if False: # self.stamp > 0:
             begin = self.stamp
         else:
             begin = 0

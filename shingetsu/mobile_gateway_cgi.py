@@ -87,16 +87,8 @@ class CGI(mobile_gateway.CGI):
             return
         elif path == "motd":
             self.print_motd()
-        elif path == "mergedjs":
-            self.print_mergedjs()
-        elif path == "rss":
-            self.print_rss()
-        elif path == 'recent_rss':
-            self.print_recent_rss()
-        elif path == "index":
-            self.print_index()
-        elif path == "changes":
-            self.print_changes()
+        elif path == "new-posts":
+            self.print_new_posts()
         elif path in ("recent", "new"):
             if (not self.isfriend) and (not self.isadmin):
                 self.print403()
@@ -110,8 +102,6 @@ class CGI(mobile_gateway.CGI):
                 self.print404()
         elif self.form.getfirst("cmd", "") == "new":
             self.jump_new_file()
-        elif path.startswith("csv"):
-            self.print_csv(path)
         elif re.search(r"^thread/(thread_[0-9A-F]+)/([0-9a-f]{32})/s(\d+)\.(\d+x\d+)\.(.*)", path):
             found = re.search(r"^thread/(thread_[0-9A-F]+)/([0-9a-f]{32})/s(\d+)\.(\d+x\d+)\.(.*)", path)
             (datfile, stamp, id, thumbnail_size, suffix) = found.groups()
@@ -212,15 +202,17 @@ class CGI(mobile_gateway.CGI):
                 self.stdout.write("レスが見つかりません")
             return
 
-        access = None
+        access = 0
         if config.use_cookie and len(cache) and (not id) and (not page):
             try:
                 cookie = SimpleCookie(self.environ.get('HTTP_COOKIE', ''))
-                if 'access' in cookie:
-                    access = cookie['access'].value
+                if ('access_' + file_path) in cookie and 'access_new_posts' in cookie:
+                    access = int(cookie['access_new_posts'].value)
+                if ('access_' + file_path) in cookie and access < int(cookie['access_' + file_path].value):
+                    access = int(cookie['access_' + file_path].value)
             except CookieError as err:
                 self.stderr.write('%s\n' % err)
-            newcookie = self.setcookie(cache, access)
+            newcookie = self.setcookie(cache, path)
         else:
             newcookie = ''
         #rss = self.gateway_cgi + '/rss'
@@ -267,7 +259,7 @@ class CGI(mobile_gateway.CGI):
             rec = cache[k]
             if ((not id) or (rec.id[:8] == id)) and rec.load_body():
                 new_record = True
-                if (access and int(access) >= rec.stamp) or id or page != 0:
+                if (access and access >= rec.stamp) or id or page != 0:
                     new_record = False
                 self.print_record(cache, rec, path, str_path, new_record, False)
                 printed = True
@@ -278,7 +270,7 @@ class CGI(mobile_gateway.CGI):
         suffixes = list(mimetypes.types_map.keys())
         suffixes.sort()
         related_threads = None;
-        if len(cache.tags) > 0:
+        if False and len(cache.tags) > 0 and not id:
             related_threads = CacheList()
             try:
                 related_threads = [x for x in related_threads if ((str(x) != str(cache)) and len(set([str(t).lower() for t in cache.tags]) & set([str(t).lower() for t in x.tags])) > 0  )]
@@ -297,6 +289,7 @@ class CGI(mobile_gateway.CGI):
             'suffixes': suffixes,
             'limit': config.record_limit * 3 // 4,
             'related_threads': related_threads,
+            'post_message': self.form.getfirst('message', ''),
         }
         #self.stdout.write(self.template('thread_bottom', var))
         self.stdout.write(self.template('mobile_thread_footer', var))
@@ -309,19 +302,27 @@ class CGI(mobile_gateway.CGI):
         #self.remove_file_form(cache, escaped_path)
         #self.footer(menubar=self.menubar('bottom', rss))
 
-    def setcookie(self, cache, access):
+    def setcookie(self, cache, title):
+        file_path = self.file_encode('thread', title)
+
         now = int(time.time())
         expires = time.strftime('%a, %d %b %Y %H:%M:%S GMT',
                                 time.gmtime(now + config.save_cookie))
-        path = self.mobile_gateway_cgi + '/thread/' + \
-                  self.str_encode(self.file_decode(cache.datfile))
         cookie = SimpleCookie()
-        cookie['access'] = str(now)
-        cookie['access']['path'] = path
-        cookie['access']['expires'] = expires
-        if access:
-            cookie['tmpaccess'] = str(access)
-            cookie['tmpaccess']['path'] = '/'
+        cookie['access_' + file_path] = str(now)
+        cookie['access_' + file_path]['path'] = '/'
+        cookie['access_' + file_path]['expires'] = expires
+
+        return cookie
+
+    def setcookie_for_new_posts(self):
+        now = int(time.time())
+        expires = time.strftime('%a, %d %b %Y %H:%M:%S GMT',
+                                time.gmtime(now + config.save_cookie))
+        cookie = SimpleCookie()
+        cookie['access_new_posts'] = str(now)
+        cookie['access_new_posts']['path'] = '/'
+        cookie['access_new_posts']['expires'] = expires
         return cookie
 
     def print_record(self, cache, rec, path, str_path, new_record, ajax):
@@ -404,6 +405,10 @@ class CGI(mobile_gateway.CGI):
                 self.print404(cache)
 
     def print_threads(self):
+        cookie = None
+        if config.use_cookie:
+            cookie = SimpleCookie(self.environ.get('HTTP_COOKIE', ''))
+
         if self.str_filter:
             title = '%s : %s' % (self.message['changes'], self.str_filter)
         else:
@@ -419,9 +424,14 @@ class CGI(mobile_gateway.CGI):
             'taglist': UserTagList(),
             'cachelist': cachelist,
             'search_new_file': False,
+            'cookie': cookie,
         }
         self.stdout.write(self.template('mobile_header', var))
-        self.stdout.write(self.template('mobile_threads', var))
+        self.stdout.write(self.template('mobile_threads_header', var))
+        for cache in cachelist:
+            if cache.type == 'thread':
+                self.stdout.write(self.make_list_item(cache, target='changes', search=False, cookie=cookie))
+        self.stdout.write(self.template('mobile_threads_footer', var))
         self.stdout.write(self.template('mobile_footer', var))
             
     def print_index(self):
@@ -436,17 +446,76 @@ class CGI(mobile_gateway.CGI):
         cachelist.sort(key=attrgetter('velocity', 'count'), reverse=True)
         self.print_index_list(cachelist, "index")
 
-    def print_changes(self):
-        """Print changes page."""
-        if self.str_filter:
-            title = '%s : %s' % (self.message['changes'], self.str_filter)
+    def rss_text_format(self, plain):
+        buf = plain.replace("<br>", " ")
+        buf = buf.replace("&", "&amp;")
+        buf = re.sub(r'&amp;(#\d+|lt|gt|amp);', r'&\1;', buf)
+        buf = buf.replace("<", "&lt;")
+        buf = buf.replace(">", "&gt;")
+        buf = buf.replace("\r", "")
+        buf = buf.replace("\n", "")
+        return buf
+
+    def rss_html_format(self, plain, appli, path):
+        title = self.str_decode(path)
+        buf = self.html_format(plain, appli, title, absuri=True)
+        if buf:
+            buf = '<p>%s</p>' % buf
+        return buf
+
+    def print_new_posts(self):
+        access = 0
+        if config.use_cookie:
+            try:
+                cookie = SimpleCookie(self.environ.get('HTTP_COOKIE', ''))
+                if 'access_new_posts' in cookie:
+                    access = int(cookie['access_new_posts'].value)
+            except CookieError as err:
+                self.stderr.write('%s\n' % err)
+            newcookie = self.setcookie_for_new_posts()
         else:
-            title = self.message['changes']
-        self.header(title)
-        self.print_paragraph(self.message['desc_changes'])
+            newcookie = ''
+
+        var = {
+            'page_title': '新着レスまとめ読み',
+            'cookie': newcookie,
+        }
+        self.stdout.write(self.template('mobile_header', var))
+        self.stdout.write('<h3>' + var['page_title'] + '</h3>');
+
         cachelist = CacheList()
-        cachelist.sort(key=lambda x: x.valid_stamp, reverse=True)
-        self.print_index_list(cachelist, "changes")
+        now = int(time.time())
+        new_posts_count = 0
+        for cache in cachelist:
+            title = self.escape(self.file_decode(cache.datfile))
+            file_path = self.file_encode('thread', title)
+            access_thread = 0
+            if config.use_cookie and 'access_' + file_path in cookie:
+                access_thread = int(cookie['access_' + file_path].value)
+
+            if access_thread > 0 and cache.valid_stamp + config.rss_range >= now and access < cache.valid_stamp and access_thread < cache.valid_stamp:
+                self.stdout.write('<div class="panel panel-info">');
+                self.stdout.write('<div class="panel-heading" style="color:black;"><h4 style="margin:0">');
+                self.stdout.write(title);
+                str_path = self.str_encode(title)
+                self.stdout.write('</h4></div><div class="panel-body" style="margin:0;padding:10px 10px 0px 10px;">');
+                for r in cache:
+                    if r.stamp + config.rss_range < now or access >= r.stamp or access_thread >= r.stamp:
+                        continue
+                    r.load_body()
+                    desc = self.rss_text_format(r.get("body", ""))
+                    content = self.rss_html_format(r.get("body", ""),
+                                                   self.appli[cache.type],
+                                                   title)
+                    self.print_record(cache, r, title, str_path, False, False)
+                    new_posts_count = new_posts_count + 1
+                    r.free()
+                self.stdout.write("</div></div>");
+        if new_posts_count == 0:
+            self.stdout.write("<p>このページには既読スレッドの新着レスが表示されます。</p>");
+            self.stdout.write("<p>新着レスはありません。</p>");
+        self.stdout.write(self.template('mobile_new_posts_footer', var))
+        self.stdout.write(self.template('mobile_footer', var))
 
     def make_recent_cachelist(self):
         """Make dummy cachelist from recentlist."""
@@ -473,71 +542,6 @@ class CGI(mobile_gateway.CGI):
         cachelist = self.make_recent_cachelist()
         self.print_index_list(cachelist, "recent", search_new_file=True)
 
-    def print_csv(self, path):
-        """CSV output as API."""
-        found = re.search(r"^csv/([^/]+)/(.+)", path)
-        if found:
-            target, cols = found.groups()
-        else:
-            self.print404()
-            return
-        cols = cols.split(",")
-        if target == "index":
-            cachelist = CacheList()
-        elif target == "changes":
-            cachelist = CacheList()
-            cachelist.sort(key=lambda x: x.valid_stamp, reverse=True)
-        elif target == "recent":
-            if (not self.isfriend) and (not self.isadmin):
-                self.print403()
-                return
-            cachelist = self.make_recent_cachelist()
-        else:
-            self.print404()
-            return
-        self.stdout.write("Content-Type: text/comma-separated-values;" +
-                          " charset=UTF-8\n\n")
-        writer = csv.writer(self.stdout)
-        for cache in cachelist:
-            title = self.file_decode(cache.datfile)
-            if cache.type in config.types:
-                type = cache.type
-                path = self.appli[cache.type] + self.sep + \
-                       self.str_encode(title)
-            else:
-                type = ""
-                path = ""
-            row = []
-            for c in cols:
-                if c == "file":
-                    row.append(cache.datfile)
-                elif c == "stamp":
-                    row.append(cache.valid_stamp)
-                elif c == "date":
-                    row.append(self.localtime(cache.valid_stamp))
-                elif c == "path":
-                    row.append(path)
-                elif c == "uri":
-                    if self.host and path:
-                        row.append("http://" + self.host + path)
-                    else:
-                        row.append("")
-                elif c == "type":
-                    row.append(cache.type)
-                elif c == "title":
-                    row.append(title)
-                elif c == "records":
-                    row.append(len(cache))
-                elif c == "size":
-                    row.append(cache.size)
-                elif c == 'tag':
-                    row.append(str(cache.tags))
-                elif c == 'sugtag':
-                    row.append(str(cache.sugtags))
-                else:
-                    row.append("")
-            writer.writerow(row)
-
     def jump_new_file(self):
         if self.form.getfirst("link", "") == "":
             self.header(self.message["null_title"], deny_robot=True)
@@ -558,118 +562,6 @@ class CGI(mobile_gateway.CGI):
                           '&search_new_file=' + search)
         else:
             self.print404()
-
-    def rss_text_format(self, plain):
-        buf = plain.replace("<br>", " ")
-        buf = buf.replace("&", "&amp;")
-        buf = re.sub(r'&amp;(#\d+|lt|gt|amp);', r'&\1;', buf)
-        buf = buf.replace("<", "&lt;")
-        buf = buf.replace(">", "&gt;")
-        buf = buf.replace("\r", "")
-        buf = buf.replace("\n", "")
-        return buf
-
-    def rss_html_format(self, plain, appli, path):
-        title = self.str_decode(path)
-        buf = self.html_format(plain, appli, title, absuri=True)
-        if buf:
-            buf = '<p>%s</p>' % buf
-        return buf
-
-    def print_rss(self):
-        rss = RSS(encode = "UTF-8",
-                  title = self.message["logo"],
-                  parent = "http://" + self.host,
-                  uri = "http://" + self.host
-                                  + self.gateway_cgi + self.sep + "rss",
-                  description = self.message["description"],
-                  xsl = config.xsl)
-        cachelist = CacheList()
-        now = int(time.time())
-        for cache in cachelist:
-            if cache.valid_stamp + config.rss_range >= now:
-                title = self.escape(self.file_decode(cache.datfile))
-                path = self.appli[cache.type]+self.sep+self.str_encode(title)
-                for r in cache:
-                    if r.stamp + config.rss_range < now:
-                        continue
-                    r.load_body()
-                    desc = self.rss_text_format(r.get("body", ""))
-                    content = self.rss_html_format(r.get("body", ""),
-                                                   self.appli[cache.type],
-                                                   title)
-                    attach = r.get('attach', '')
-                    if attach:
-                        suffix = r.get('suffix', '')
-                        if not re.search(r'^[0-9A-Za-z]+$', suffix):
-                            suffix = txt
-                        content += '\n    <p>' + \
-                            '<a href="http://%s%s%s%s/%s/%d.%s">%d.%s</a></p>'\
-                            % (self.host, self.appli[cache.type], self.sep,
-                               cache.datfile,
-                               r.id, r.stamp, suffix,
-                               r.stamp, suffix)
-                    if cache.type == "thread":
-                        permapath = "%s/%s" % (path[1:], r.id[:8])
-                    else:
-                        permapath = path[1:]
-                    rss.append(
-                        permapath,
-                        date = r.stamp,
-                        title = title,
-                        creator = self.rss_text_format(r.get('name', '')),
-                        subject = [str(i) for i in cache.tags],
-                        description = desc,
-                        content = content)
-                    r.free()
-
-        self.stdout.write("Content-Type: text/xml; charset=UTF-8\n")
-        try:
-            self.stdout.write("Last-Modified: %s\n" %
-                              self.rfc822_time(rss[list(rss.keys())[0]].date))
-        except IndexError as KeyError:
-            pass
-        self.stdout.write("\n")
-        self.stdout.write(make_rss1(rss))
-
-    def print_recent_rss(self):
-        rss = RSS(encode = 'UTF-8',
-                  title = '%s - %s' % (
-                          self.message['recent'], self.message['logo']),
-                  parent = 'http://' + self.host,
-                  uri = 'http://' + self.host
-                                  + self.gateway_cgi + self.sep + 'recent_rss',
-                  description = self.message['desc_recent'],
-                  xsl = config.xsl)
-        cachelist = self.make_recent_cachelist()
-        for cache in cachelist:
-            title = self.escape(self.file_decode(cache.datfile))
-            tags = list(set([str(t) for t in cache.tags + cache.sugtags]))
-            if cache.type not in self.appli:
-                continue
-            rss.append(
-                self.appli[cache.type][1:]+self.sep+self.str_encode(title),
-                date = cache.recent_stamp,
-                title = title,
-                subject = tags,
-                content = cgi.escape(title))
-
-        self.stdout.write('Content-Type: text/xml; charset=UTF-8\n')
-        try:
-            self.stdout.write('Last-Modified: %s\n' %
-                              self.rfc822_time(rss[list(rss.keys())[0]].date))
-        except IndexError as KeyError:
-            pass
-        self.stdout.write('\n')
-        self.stdout.write(make_rss1(rss))
-
-    def print_mergedjs(self):
-        self.stdout.write('Content-Type: application/javascript;'
-            + ' charset=UTF-8')
-        self.stdout.write('Last-Modified: '
-            + self.rfc822_time(self.jscache.mtime) + '\n')
-        self.stdout.write('\n')
-        self.stdout.write(self.jscache.script)
 
     def print_motd(self):
         self.stdout.write("Content-Type: text/plain; charset=UTF-8\n\n")

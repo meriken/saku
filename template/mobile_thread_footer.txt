@@ -23,7 +23,6 @@
 	<div style="display:inline-block;margin-bottom:10px;">
 		<a href="#page-top" class='btn btn-default' style=''>最初</a>
 	</div>
-{% endif %}
 
 {% if cache.tags %}
 	<div style="margin-bottom:10px;" >
@@ -43,12 +42,13 @@
 #}
 
 {% if related_threads %}
-<div class="list-group" style="margin-top:10px;">
+<div class="list-group" style="margin-top:10px;margin-bottom:10px;">
   <a class="list-group-item" style="background:#f5f5f5;">関連スレッド</a>
   {% for cache in related_threads %}
       {{make_list_item(cache, target='', search=False)}}
   {% endfor %}
 </div>
+{% endif %}
 {% endif %}
 
 <form id="postarticle" name="postarticle" method="post" action="{{mobile_gateway_cgi}}" enctype="multipart/form-data" role="form">
@@ -78,7 +78,7 @@
 						<input type="file" multiple="" name="attach" id="attach">
 					</span>
 			</div>
-			<textarea rows="5" name="body" id="body" class="no-border wrapped-input form-control" placeholder="{{message.post_body}}"></textarea>
+			<textarea rows="5" name="body" id="body" class="no-border wrapped-input form-control" placeholder="{{message.post_body}}">{{post_message}}</textarea>
 			<div class="form-actions">
 				<button class="btn btn-block btn-primary wrapped-input no-border" style="border-radius: 0 0 4px 4px;">
 					{{message.post}}
@@ -129,9 +129,25 @@
 <script>
 	$( document ).ready(function() {
 		if ($(".new-record").length > 0 && $(".old-record").length > 0) {
-			setTimeout(function() { $('html, body').scrollTop($(".new-record").offset().top - $('.navbar-header').height() - 10); }, 500);
+			setTimeout(function() { $('html, body').scrollTop($(".new-record").offset().top - $('.navbar-header').height() - 10); }, 200);
 		}
+{% if post_message %}
+		setFocusOnMessageTextArea();
+{% endif %}
 	});
+
+	function setFocusOnMessageTextArea() {
+		var messageTextArea = $('#postarticle textarea');
+		messageTextArea.focus();
+		var len = messageTextArea.val().length * 2;
+		messageTextArea.focus();
+		messageTextArea[0].setSelectionRange(len, len);
+	}
+
+	function jumpToPostForm() {
+		$(document).scrollTop($("#postarticle").offset().top - $('.navbar-header').outerHeight() - 10);
+setFocusOnMessageTextArea()
+	}
 
 	// For attachment
 	$(document).on('change', '.btn-file :file', function() {
@@ -156,27 +172,6 @@
 		}
 	});
 
-	function initializeAnchors() {
-		$('.anchor')
-			.tooltip({
-				trigger: 'manual',
-				title: anchorHoverGetData,
-				html: true,
-				container: 'body',
-				placement: 'bottom'
-			})
-			.unbind("click")
-			.unbind("touchstart")
-			.bind("touchstart", function (e) { e.stopPropagation();})
-			.click(function (e) { e.stopPropagation(); $(this).tooltip('toggle'); });
-		$('.tooltip-inner')
-			.unbind("click")
-			.unbind("touchstart")
-			.bind("touchstart", function (e) { e.stopPropagation(); })
-			.click(function (e) { e.stopPropagation(); });
-	}
-	initializeAnchors();
-
 	function initializePostMenus() {
 		$('.post-menu-reply')
 			.unbind("click")
@@ -193,7 +188,7 @@
 			.unbind("touchstart")
 			.bind("touchstart", function (e) { e.stopPropagation();})
 			.click(function (e) { 
-				var quote =  $.trim($('#r' + $(this).attr('data-sid') + ' .panel-body').text());
+				var quote =  $.trim($('#r' + $(this).attr('data-sid') + ' .panel-body').first().text());
 				quote = (quote.length ? ('> ' + quote.replace(/\r?\n/g, '\n> ') + '\n\n') : '');
 				e.stopPropagation(); 
 				$(this).parent().parent().parent().children('.dropdown-toggle').dropdown('toggle');
@@ -203,29 +198,9 @@
 
 	}
 	initializePostMenus();
-
-	function jumpToPostForm() {
-		$(document).scrollTop($("#postarticle").offset().top - $('.navbar-header').outerHeight() - 10);
-	}
 	
 	$( document ).ready(function() {
-		$('.post-image').on('click', function (event) {
-			$('#blueimp-gallery').data('useBootstrapModal', false);
-			$('#blueimp-gallery').toggleClass('blueimp-gallery-controls', true);
-			event.preventDefault();
-			blueimp.Gallery(
-				[{
-					//title: '',
-					href: $(this).attr('src'),
-					//type: '',
-					//poster: ''
-				}], 
-				$('#blueimp-gallery').data());
-		});
-
 		$('html, body')
-			.click(function () { $('.anchor').tooltip('hide'); })
-			.bind("touchstart", function () { $('.anchor').tooltip('hide'); })
 			.on("dragenter", function(event) { event.preventDefault(); })
 			.on("dragover", function(event) { event.preventDefault(); })
 			.on("drop", function(event) {
@@ -235,35 +210,5 @@
 				setTimeout(jumpToPostForm, 200);
 				return false;
 			});
-
-		$('.dropdown-toggle').click(function (){
-			var button = $(this);
-			var dropdown = button.parent().children('.dropdown-menu');
-			var dropdownWidth = dropdown.width();
-			dropdown.css('top', button.offset().top - $('body').scrollTop() + button.outerHeight() + "px");
-			dropdown.css('left', button.offset().left - dropdown.outerWidth() + button.outerWidth() + "px");
-			dropdown.width(dropdownWidth);
-		});
 	});
-
-	var cachedData = Array();
-	function anchorHoverGetData(){
-		var element = $(this);
-		var href = element.attr('data-href');
-
-		if(href in cachedData)
-			return cachedData[href];
-		$.ajax(href, {
-			async: true,
-			success: function(data) {
-				if (typeof cachedData[href] == 'undefined') {
-					cachedData[href] = data;
-					$(element).data('tooltip',false)
-							  .tooltip({ trigger: 'manual',	title: data, html: true, container: 'body', placement: 'bottom' })
-							  .tooltip('show');
-				}
-			}
-		});
-		return 'Loading...';
-	}
 </script>
