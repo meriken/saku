@@ -1,5 +1,4 @@
 <script>
-
 	function initializePostMenus() {
 		$('.post-menu-reply')
 			.unbind("click")

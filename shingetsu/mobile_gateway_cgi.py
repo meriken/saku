@@ -494,11 +494,12 @@ class CGI(mobile_gateway.CGI):
                 access_thread = int(cookie['access_' + file_path].value)
 
             if access_thread > 0 and cache.valid_stamp + config.rss_range >= now and access < cache.valid_stamp and access_thread < cache.valid_stamp:
+                str_path = self.str_encode(title)
                 self.stdout.write('<div class="panel panel-info">');
                 self.stdout.write('<div class="panel-heading" style="color:black;"><h4 style="margin:0">');
+                self.stdout.write('<a style="color:black" target="_blank" href="' + self.mobile_gateway_cgi + '/thread/' + str_path + '">');
                 self.stdout.write(title);
-                str_path = self.str_encode(title)
-                self.stdout.write('</h4></div><div class="panel-body" style="margin:0;padding:10px 10px 0px 10px;">');
+                self.stdout.write('</a></h4></div><div class="panel-body" style="margin:0;padding:10px 10px 0px 10px;">');
                 for r in cache:
                     if r.stamp + config.rss_range < now or access >= r.stamp or access_thread >= r.stamp:
                         continue

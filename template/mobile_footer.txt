@@ -84,7 +84,10 @@
 					.bind("touchstart", function (e) { e.stopPropagation(); })
 					.bind("touchend", function (e) { e.stopPropagation(); })
 					.click(function (e) { e.stopPropagation(); $(this).tooltip('toggle'); })
-					.hoverIntent(function (e) { $(this).tooltip('show'); }, function (e) {})
+					.hoverIntent(function (e) { if ($('#' + $(this).attr('aria-describedby')).length <= 0) $(this).tooltip('show'); }, function (e) {})
+					.on('hide.bs.tooltip', function () {
+						$('#' + $(this).attr('aria-describedby')).nextAll('.tooltip').remove();
+					})
 					;
 				$('.tooltip-inner')
 					.unbind("click")
@@ -104,7 +107,7 @@
 			}
 			initializeAnchors();
 			$(document)
-				.bind("mouseup", function (e) { e.stopPropagation(); $('.anchor').tooltip('hide'); $('.tooltip').remove(); })
+				.bind("mouseup",  function (e) { e.stopPropagation(); $('.anchor').tooltip('hide'); $('.tooltip').remove(); })
 				.bind("touchend", function (e) { e.stopPropagation(); $('.anchor').tooltip('hide'); $('.tooltip').remove(); });
 			$(function () {
 				var currentMousePos = { x: -1, y: -1 };
@@ -126,12 +129,31 @@
 
 					timer = setTimeout(function () {
 						fadeInBuffer = true;
-					    var elementMouseIsOver = $(document.elementFromPoint(currentMousePos.x - window.pageXOffset, currentMousePos.y - window.pageYOffset));
-						while (elementMouseIsOver.length > 0) {
-							if (elementMouseIsOver.hasClass('tooltip-inner') || elementMouseIsOver.hasClass('anchor'))
+						if ($('.slide-content').length > 0)
+							return;
+
+						var res = [];
+						var element = document.elementFromPoint(currentMousePos.x - window.pageXOffset, currentMousePos.y - window.pageYOffset);
+						var tooltipInnerElement = null;
+						while (element && element.tagName != "BODY" && element.tagName != "HTML"){
+							res.push(element);
+							element.style.visibility = "hidden";
+							if ($(element).hasClass('anchor')) {
+								for(var i = 0; i < res.length; i++)
+									res[i].style.visibility = "visible";
 								return;
-							elementMouseIsOver = elementMouseIsOver.parent();
+							} else if ($(element).hasClass('tooltip-inner')) {
+								for(var i = 0; i < res.length; i++)
+									res[i].style.visibility = "visible";
+								$(element).parent().nextAll('.tooltip').remove();
+								return;
+							} 
+							element = document.elementFromPoint(currentMousePos.x - window.pageXOffset, currentMousePos.y - window.pageYOffset);;
 						}
+
+						for(var i = 0; i < res.length; i++)
+							res[i].style.visibility = "visible";
+						$('.anchor').tooltip('hide');
 						$('.tooltip').remove();
 					}, 250)
 				});
