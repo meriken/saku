@@ -57,7 +57,7 @@
 {% if cache.tags %}
 	<div style="margin-bottom:10px;" >
 {% for tag in cache.tags %}
-  <a href="{{mobile_gateway_cgi}}/threads?tag={{tag  | urlencode}}" class="btn btn btn-success">{{tag}}</a>
+  <a href="{{mobile_gateway_cgi}}/threads?tag={{tag  | urlencode}}" class="btn btn-sm  btn-success">{{tag}}</a>
 {% endfor %}
 	</div>
 {% endif %}

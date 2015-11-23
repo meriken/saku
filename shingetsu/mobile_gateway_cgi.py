@@ -146,17 +146,17 @@ class CGI(mobile_gateway.CGI):
 
     def print_top_page(self):
         message = self.message
-        cachelist = CacheList()
-        cachelist.sort(key=lambda x: x.valid_stamp, reverse=True)
-        now = int(time.time())
-        output_cachelist = []
-        for cache in cachelist:
-            if now <= cache.valid_stamp + config.top_recent_range:
-                output_cachelist.append(cache)
+        #cachelist = CacheList()
+        #cachelist.sort(key=lambda x: x.valid_stamp, reverse=True)
+        #now = int(time.time())
+        #output_cachelist = []
+        #for cache in cachelist:
+        #    if now <= cache.valid_stamp + config.top_recent_range:
+        #        output_cachelist.append(cache)
         #self.header(message['logo'] + ' - ' + message['description'])
         var = {
             'page_title': 'トップ - ' + self.message['logo'],
-            'cachelist': output_cachelist,
+        #    'cachelist': output_cachelist,
             'target': 'changes',
             'taglist': UserTagList(),
             'mch_url': self.mch_url(),

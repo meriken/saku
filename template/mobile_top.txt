@@ -5,13 +5,72 @@
 	<a href="/gateway.cgi/motd">新月ネットワーク利用規約</a>を守った上で、自由に利用してください。
 </p>
 
-    <div class="list-group">
-		<a href="{{mobile_gateway_cgi}}/threads" class="list-group-item">
-		  スレッド一覧
-		  <span class="glyphicon glyphicon-chevron-right pull-right"></span>
-		</a>
-		<a href="{{mobile_gateway_cgi}}/new-posts" class="list-group-item">
-		  新着レスまとめ読み
-		  <span class="glyphicon glyphicon-chevron-right pull-right"></span>
-		</a>
-    </div>
+<div class="list-group" style='margin-bottom:10px'>
+	<a href="{{mobile_gateway_cgi}}/threads" class="list-group-item">
+		スレッド一覧
+		<span class="glyphicon glyphicon-chevron-right pull-right"></span>
+	</a>
+	<a href="{{mobile_gateway_cgi}}/new-posts" class="list-group-item">
+		新着レスまとめ読み
+		<span class="glyphicon glyphicon-chevron-right pull-right"></span>
+	</a>
+</div>
+
+<div class="panel panel-default" style='margin-top:0'>
+	<div class="panel-heading">
+		タグ一覧
+	</div>
+	<div class="panel-body" style='padding:10px 15px 5px 15px;'>
+{% if False %}
+{% for tag in taglist %}
+		<a class='btn btn-sm btn-success' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+{% endfor %}
+{% else %}
+		<div class="btn-group btn-group-sm" role="group">
+			{% for tag in ['質問', '雑談', 'ニュース', '実況'] %}
+				<a class='btn btn-success' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+			{% endfor %}
+		</div>
+		<div class="btn-group btn-group-sm" role="group">
+			{% for tag in ['生活', '料理', '日課'] %}
+				<a class='btn btn-success' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+			{% endfor %}
+		</div>
+		<div class="btn-group btn-group-sm" role="group">
+			{% for tag in ['画像', '動画', '二次元', '三次元', '18禁'] %}
+				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+			{% endfor %}
+		</div>
+		<div class="btn-group btn-group-sm" role="group">
+			{% for tag in ['趣味', '音楽', 'テレビ'] %}
+				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+			{% endfor %}
+		</div>
+		<div class="btn-group btn-group-sm" role="group">
+			{% for tag in ['漫画', 'アニメ', 'ゲーム', '2ch'] %}
+				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+			{% endfor %}
+		</div>
+		<div class="btn-group btn-group-sm" role="group">
+			{% for tag in ['PC', 'IT', 'ソフトウェア'] %}
+				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+			{% endfor %}
+		</div>
+		<div class="btn-group btn-group-sm" role="group">
+			{% for tag in ['開発', 'プログラミング', 'P2P'] %}
+				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+			{% endfor %}
+		</div>
+		<div class="btn-group btn-group-sm" role="group">
+			{% for tag in ['新月', '運用', 'スレ一覧', 'テスト'] %}
+				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+			{% endfor %}
+		</div>
+		<div class="btn-group btn-group-sm" role="group">
+			{% for tag in ['きれいな新月', '裏'] %}
+				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+			{% endfor %}
+		</div>
+{% endif %}
+	</div>
+</div>

@@ -4,6 +4,6 @@
 <p>Click and jump to <a href="{{escape_simple(next)}}">{{escape_simple(next)}}</a></p>
 <script type="text/javascript">
 //<![CDATA[
-    window.location.href = "{{escape_js(next)}}";
+    $(document).ready(function () { window.location.href = "{{escape_js(next)}}"; });
 //]]>
 </script>

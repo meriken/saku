@@ -151,3 +151,6 @@ Content-Type: text/html; charset=UTF-8
 
     <!-- Begin page content -->
     <div class="container">
+{% if cgi.appli_type != 'thread' and title %}
+		<h3>{{title}}</h3>
+{% endif %}

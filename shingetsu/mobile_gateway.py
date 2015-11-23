@@ -258,6 +258,7 @@ class CGI(basecgi.CGI):
             self.jscache.update()
             js = []
         var = {
+            'page_title': title,
             'title': title,
             'str_title': self.str_encode(title),
             'rss': rss,
@@ -268,10 +269,10 @@ class CGI(basecgi.CGI):
             'css': self.extension('css'),
             'menubar': self.menubar('top', rss)
         }
-        self.stdout.write(self.template('header', var))
+        self.stdout.write(self.template('mobile_header', var))
 
     def footer(self, menubar=None):
-        self.stdout.write(self.template('footer', {'menubar': menubar}))
+        self.stdout.write(self.template('mobile_footer', {'menubar': menubar}))
 
     def localtime(self, stamp=0):
         """Return YYYY-mm-dd HH:MM."""
@@ -395,7 +396,7 @@ class CGI(basecgi.CGI):
         var = {
             'next': next,
         }
-        self.stdout.write(self.template('jump', var))
+        self.stdout.write(self.template('mobile_jump', var))
 
     def print302(self, next):
         """Print CGI header (302 moved temporarily)."""

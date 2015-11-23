@@ -9,7 +9,7 @@
     <div id="r{{sid}}" class="well well-sm" style="background: #ebebc4; border: solid 1px #cc0; margin-bottom: 8px; padding: 8px;">
 {% endif %}
         <span style="display:inline-block;width:80%;vertical-align:middle;">
-			<span style="top:3px;" class="glyphicon glyphicon-barcode"></span>
+			<span style="top:3px;" class="glyphicon glyphicon-tag"></span>
 			<a href="{{mobile_gateway_cgi}}/thread/{{str_path}}/{{sid}}" class="id" id="i{{sid}}" style="color:black;font-family:'Courier New',monotype;word-break:keep-all;white-space:nowrap;">{{sid}}</a>
 			&nbsp;
 
