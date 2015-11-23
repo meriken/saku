@@ -1,3 +1,24 @@
+		<a id='qrcode-button' class='btn btn-default'><span style="top:3px;" class="glyphicon glyphicon-barcode"></span> QRコード</a>
+		
+		<div id='qrcode-panel' class="panel panel-default" style='margin-top:0; max-width:160px; display: none;'>
+			<div id='qrcode-panel-heading' class="panel-heading" style=''>
+				<span style="top:2px;" class="glyphicon glyphicon-barcode"></span> QRコード
+			</div>
+			<div class="panel-body" style='padding:10px 15px 5px 15px;'>
+				<div id="qrcode"></div>
+		    </div>
+			<script>
+				$('#qrcode').qrcode({width: 128, height: 128, text: window.location.href});
+				$('#qrcode-button').click(function () {
+					$('#qrcode-button').css('display', 'none');
+					$('#qrcode-panel').css('display', 'block');
+					setTimeout(function() { $('html, body').scrollTop($("#qrcode-panel").offset().top - $('.navbar-header').height() - 10); }, 200);
+				});
+				$('#qrcode-panel').click(function () {
+					$('#qrcode-button').css('display', 'inline-block');
+					$('#qrcode-panel').css('display', 'none');
+				});
+			</script>
 	    </div>
 
 		<!-- The Bootstrap Image Gallery lightbox, should be a child element of the document body -->
@@ -34,7 +55,7 @@
 				</div>
 			</div>
 		</div>
-		
+
 		<a id="page-bottom"></a>
 
 		<script>

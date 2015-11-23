@@ -36,6 +36,7 @@ Content-Type: text/html; charset=UTF-8
 	<script src="/blueimp-gallery/js/jquery.blueimp-gallery.min.js"></script>
 	<script src="/bootstrap-image-gallery/js/bootstrap-image-gallery.js"></script>
 	<script src="/jquery/jquery.hoverIntent.js"></script>
+	<script src="/jquery/jquery.qrcode.min.js"></script>
 <style>
 	html {
 		overflow: -moz-scrollbars-vertical; 
