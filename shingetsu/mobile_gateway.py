@@ -458,7 +458,7 @@ class CGI(basecgi.CGI):
             'datfile': '',
             'cginame': self.gateway_cgi,
         }
-        self.stdout.write(self.template('new_element_form', var))
+        self.stdout.write(self.template('mobile_create_new_thread', var))
 
     def error_time(self):
         from random import gauss

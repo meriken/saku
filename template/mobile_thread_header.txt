@@ -7,53 +7,11 @@
 		-ms-user-select: all;
 		user-select: all;
 	}
-	.input-wrapper {
-		border: 1px solid lightgrey;
-		border-radius: 4px;
-		display: block;
-		margin-bottom: 10px;
-	}
-	.wrapped-input {
-		border-radius: 0 0;
-		border-top: none;
-		border-left: none;
-		border-right: none;
-		border-bottom: 1px solid lightgrey;
-	}
-	.wrapped-input:last-child {
-		border-bottom: none;
-	}
-	.no-border {
-		border: none;
-		border-radius: 0;
-		box-shadow: none;
-	}
-	.btn-file {
-		position: relative;
-		overflow: hidden;
-		text-align: left;
-		color: gray;
-	}
-	.btn-file input[type=file] {
-		position: absolute;
-		top: 0;
-		right: 0;
-		min-width: 100%;
-		min-height: 100%;
-		font-size: 100px;
-		text-align: right;
-		filter: alpha(opacity=0);
-		opacity: 0;
-		outline: none;
-		background: white;
-		cursor: inherit;
-		display: block;
-	}
 </style>
 
 <h3><a href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}" style="color:black;">{{path}}</a></h3>
 
-{% if not id %}
+{% if not id and cache %}
 {% if cache.tags %}
 	<div style="margin-bottom:10px;" >
 {% for tag in cache.tags %}

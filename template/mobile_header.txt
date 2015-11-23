@@ -122,6 +122,49 @@ Content-Type: text/html; charset=UTF-8
 	textarea {
 		resize: vertical;
 	}
+
+	.input-wrapper {
+		border: 1px solid lightgrey;
+		border-radius: 4px;
+		display: block;
+		margin-bottom: 10px;
+	}
+	.wrapped-input {
+		border-radius: 0 0;
+		border-top: none;
+		border-left: none;
+		border-right: none;
+		border-bottom: 1px solid lightgrey;
+	}
+	.wrapped-input:last-child {
+		border-bottom: none;
+	}
+	.no-border {
+		border: none;
+		border-radius: 0;
+		box-shadow: none;
+	}
+	.btn-file {
+		position: relative;
+		overflow: hidden;
+		text-align: left;
+		color: gray;
+	}
+	.btn-file input[type=file] {
+		position: absolute;
+		top: 0;
+		right: 0;
+		min-width: 100%;
+		min-height: 100%;
+		font-size: 100px;
+		text-align: right;
+		filter: alpha(opacity=0);
+		opacity: 0;
+		outline: none;
+		background: white;
+		cursor: inherit;
+		display: block;
+	}
 </style>
   </head>
 
@@ -144,6 +187,7 @@ Content-Type: text/html; charset=UTF-8
             <li{# class="active" #}><a href="{{mobile_gateway_cgi}}">目次</a></li>
             <li><a href="{{mobile_gateway_cgi}}/threads">スレッド一覧</a></li>
             <li><a href="{{mobile_gateway_cgi}}/new-posts">新着レスまとめ読み</a></li>
+            <li><a href="{{mobile_gateway_cgi}}/create-new-thread">新規スレッド作成</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>

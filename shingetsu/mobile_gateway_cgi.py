@@ -89,12 +89,12 @@ class CGI(mobile_gateway.CGI):
             self.print_motd()
         elif path == "new-posts":
             self.print_new_posts()
-        elif path in ("recent", "new"):
+        elif path in ("recent", "create-new-thread"):
             if (not self.isfriend) and (not self.isadmin):
                 self.print403()
             elif path == "recent":
                 self.print_recent()
-            elif path == "new":
+            elif path == "create-new-thread":
                 self.header(self.message["new"], deny_robot=True)
                 self.print_new_element_form()
                 self.footer()
@@ -556,8 +556,9 @@ class CGI(mobile_gateway.CGI):
         elif self.form.getfirst("type", "") in config.types:
             tag = self.str_encode(self.form.getfirst('tag', ''))
             search = self.str_encode(self.form.getfirst('search_new_file', ''))
-            self.print302(self.appli[self.form.getfirst("type", "")] +
-                          self.sep +
+            self.print302(self.mobile_gateway_cgi + self.sep + 'thread' + self.sep +
+                          # self.appli[self.form.getfirst("type", "")] +
+                          # self.sep +
                           self.str_encode(self.form.getfirst("link", "")) +
                           '?tag=' + tag +
                           '&search_new_file=' + search)

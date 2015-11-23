@@ -7,7 +7,7 @@ lang<>ja
 
 # menu bar
 top<>トップ
-new<>新規作成
+new<>新規スレッド作成
 index<>一覧
 changes<>最終更新
 recent<>新着情報

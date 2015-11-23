@@ -1,4 +1,4 @@
-{% if not id %}
+{% if not id and cache %}
 	<div style="margin-bottom:10px;display:inline-block;" >
 		<div class="btn-group">
 			{% if page <= 0             %}<a class="btn btn-default disabled" {% else %}<a class="btn btn-default" href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}"                                           {% endif %}><span class="glyphicon glyphicon-backward"></span></a>
