@@ -481,7 +481,7 @@ class CGI(mobile_gateway.CGI):
             'cookie': newcookie,
         }
         self.stdout.write(self.template('mobile_header', var))
-        self.stdout.write('<h3>' + var['page_title'] + '</h3>');
+        self.stdout.write(self.template('mobile_new_posts_header', var))
 
         cachelist = CacheList()
         now = int(time.time())

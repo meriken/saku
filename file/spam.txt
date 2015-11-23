@@ -16,7 +16,7 @@
 
 (https?://.+){5}.+
 href.*http
-[^(\>|\:|＞)]\ http
+#[^(\>|\:|＞)]\ http
 
 <>mail:[^<]+\.(ru|fr)<>
 <>name:bvd\*mfs\}@gmail.com
