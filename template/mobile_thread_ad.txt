@@ -1,0 +1,7 @@
+{#
+<p>
+{% if 'きれいな新月' in tags %}
+	[広告{{ad_position}}]
+{% endif %}
+</p>
+#}

@@ -274,7 +274,17 @@ class CGI(mobile_gateway.CGI):
         else:
             inrange = ids[-page_size*(page+1):]
         printed = False
+        ad_position = 0
+        str_tags = [str(t).lower() for t in cache.tags]
         for k in inrange:
+            if (not id) and ad_position % 10 == 0:
+                var = {
+                    'cache': cache,
+                    'path': path,
+                    'ad_position': ad_position,
+                    'tags': str_tags
+                }
+                self.stdout.write(self.template('mobile_thread_ad', var))
             rec = cache[k]
             if ((not id) or (rec.id[:8] == id)) and rec.load_body():
                 new_record = True
@@ -283,6 +293,15 @@ class CGI(mobile_gateway.CGI):
                 self.print_record(cache, rec, path, str_path, new_record, False)
                 printed = True
             rec.free()
+            ad_position = ad_position + 1
+        if ad_position > 0:
+            var = {
+                'cache': cache,
+                'path': path,
+                'ad_position': ad_position,
+                'tags': str_tags
+            }
+            self.stdout.write(self.template('mobile_thread_ad', var))
         #self.stdout.write("</dl>\n")
         escaped_path = cgi.escape(path)
         escaped_path = re.sub(r'  ', '&nbsp;&nbsp;', escaped_path)

@@ -78,7 +78,7 @@
 				</button>
 			</div>
 		</div>
-		<div class="help-block"><a href="{{mobile_gateway_cgi}}/motd" target="_blank">{{message.agreement}}</a></div>
+		<a class='btn btn-default' href="{{mobile_gateway_cgi}}/motd" target="_blank" style='margin-bottom:10px'>{{message.agreement}}</a>
 
 		<input type="hidden" name="suffix" value="AUTO" />
 		<input type="hidden" name="dopost" value="dopost" />
