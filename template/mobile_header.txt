@@ -165,6 +165,9 @@ Content-Type: text/html; charset=UTF-8
 		cursor: inherit;
 		display: block;
 	}
+	.gist, .gist-file {
+		margin-bottom: 0 !important;
+	}
 </style>
   </head>
 

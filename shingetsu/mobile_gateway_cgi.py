@@ -429,7 +429,7 @@ class CGI(mobile_gateway.CGI):
         self.stdout.write(self.template('mobile_header', var))
         self.stdout.write(self.template('mobile_threads_header', var))
         for cache in cachelist:
-            if cache.type == 'thread':
+            if cache and cache.type == 'thread':
                 self.stdout.write(self.make_list_item(cache, target='changes', search=False, cookie=cookie))
         self.stdout.write(self.template('mobile_threads_footer', var))
         self.stdout.write(self.template('mobile_footer', var))

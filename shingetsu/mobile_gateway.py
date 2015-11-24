@@ -301,6 +301,7 @@ class CGI(basecgi.CGI):
         buf = re.sub(r"https?://[^\x00-\x20\"'()<>\[\]\x7F-\xFF]{2,}",
                      r'<a href="\g<0>">\g<0></a>',
                      buf)
+        buf = re.sub(r'\[gist:([a-f0-9]+)\]', r'<script src="https://gist.github.com/\1.js"></script>', buf);
         buf = re.sub(r"(&gt;&gt;)([0-9a-f]{8})",
                      self.res_anchor(r"\2", appli, title, absuri=absuri) +
                      r"\g<0></a>",
