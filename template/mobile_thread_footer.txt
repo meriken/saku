@@ -41,14 +41,7 @@
 {% endif %}
 #}
 
-{% if related_threads %}
-<div class="list-group" style="margin-top:10px;margin-bottom:10px;">
-  <a class="list-group-item" style="background:#f5f5f5;">関連スレッド</a>
-  {% for cache in related_threads %}
-      {{make_list_item(cache, target='', search=False)}}
-  {% endfor %}
-</div>
-{% endif %}
+<div id='related_threads' style='display:none;'></div>
 {% endif %}
 
 <form id="postarticle" name="postarticle" method="post" action="{{mobile_gateway_cgi}}" enctype="multipart/form-data" role="form">
@@ -210,5 +203,11 @@ setFocusOnMessageTextArea()
 				setTimeout(jumpToPostForm, 200);
 				return false;
 			});
+		$.ajax('{{mobile_gateway_cgi}}/thread/{{path | urlencode}}?ajax=1&related_threads=1', {
+			async: true,
+			success: function(data) {
+				$('#related_threads').html(data).css('display', 'block')
+			}
+		});
 	});
 </script>

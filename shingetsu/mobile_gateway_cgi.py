@@ -187,6 +187,7 @@ class CGI(mobile_gateway.CGI):
             return
 
         ajax = form.getfirst('ajax')
+        related_threads = form.getfirst('related_threads')
         if id and ajax:
             self.stdout.write("Content-Type: text/html; charset=UTF-8\n\n");
 
@@ -200,6 +201,24 @@ class CGI(mobile_gateway.CGI):
                 self.stdout.write("<script>initializeAnchors();</script>")
             else:
                 self.stdout.write("レスが見つかりません")
+            return
+        elif related_threads and ajax:
+            related_threads = None;
+            if len(cache.tags) > 0 and not id:
+                related_threads = CacheList()
+                try:
+                    related_threads = [x for x in related_threads if ((str(x) != str(cache)) and len(set([str(t).lower() for t in cache.tags]) & set([str(t).lower() for t in x.tags])) > 0  )]
+                except ValueError:
+                    pass
+                related_threads = random.sample(related_threads, min(5, len(related_threads)))
+            var = {
+                'ajax': ajax,
+                'cache': cache,
+                'path': path,
+                'str_path': str_path,
+                'related_threads': related_threads,
+            }
+            self.stdout.write(self.template('mobile_thread_related_threads', var))
             return
 
         access = 0
@@ -269,14 +288,6 @@ class CGI(mobile_gateway.CGI):
         escaped_path = re.sub(r'  ', '&nbsp;&nbsp;', escaped_path)
         suffixes = list(mimetypes.types_map.keys())
         suffixes.sort()
-        related_threads = None;
-        if False and len(cache.tags) > 0 and not id:
-            related_threads = CacheList()
-            try:
-                related_threads = [x for x in related_threads if ((str(x) != str(cache)) and len(set([str(t).lower() for t in cache.tags]) & set([str(t).lower() for t in x.tags])) > 0  )]
-            except ValueError:
-                pass
-            related_threads = random.sample(related_threads, min(5, len(related_threads)))
         var = {
             'path': path,
             'id': id,
@@ -288,7 +299,6 @@ class CGI(mobile_gateway.CGI):
             'num_pages': num_pages,
             'suffixes': suffixes,
             'limit': config.record_limit * 3 // 4,
-            'related_threads': related_threads,
             'post_message': self.form.getfirst('message', ''),
         }
         #self.stdout.write(self.template('thread_bottom', var))
