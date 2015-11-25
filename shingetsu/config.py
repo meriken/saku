@@ -109,6 +109,7 @@ proxy_destination = _get_value(_extconf, 'Gateway', 'proxy_destination', '')
 archive_uri = _get_value(_extconf, 'Gateway', 'archive_uri',
                          'http://archive.shingetsu.info/')
 enable2ch = _get_value(_extconf, 'Gateway', 'enable_2ch', False, 'boolean')
+force_mobile_cgi_for_visitors_and_friends = _get_value(_extconf, 'Gateway', 'force_mobile_cgi_for_visitors_and_friends', False, 'boolean')
 re_admin = re.compile(admin)
 re_friend = re.compile(friend)
 re_visitor = re.compile(visitor)

@@ -112,3 +112,4 @@ limit<>最大
 mb<>MB
 kb<>KB
 google<>Google
+meta_description<>

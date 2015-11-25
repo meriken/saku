@@ -35,6 +35,7 @@ import http.server
 import http.server
 import socketserver
 from threading import RLock
+from email.header import Header
 
 from . import config
 from . import admin_cgi, server_cgi, gateway_cgi, mobile_gateway_cgi, thread_cgi, mobile_thread_cgi
@@ -228,6 +229,16 @@ class HTTPRequestHandler(http.server.CGIHTTPRequestHandler):
             env['HTTP_X_FORWARDED_FOR'] = self.headers['X-Forwarded-For']
 
         decoded_query = query.replace('+', ' ')
+
+        if not config.re_admin.search(env["REMOTE_ADDR"]):
+            if script == 'gateway.cgi' and config.force_mobile_cgi_for_visitors_and_friends:
+                self.wfile.write(('HTTP/1.1 301 Moved Permanently\n').encode('ascii'))
+                self.wfile.write(('Location: ' + config.mobile_gateway + rest + '\n\n').encode('ascii'))
+                return
+            elif script == 'thread.cgi' and config.force_mobile_cgi_for_visitors_and_friends:
+                self.wfile.write(('HTTP/1.1 301 Moved Permanently\n').encode('ascii'))
+                self.wfile.write(('Location: ' + config.mobile_gateway + '/thread' + rest + '\n\n').encode('ascii'))
+                return
 
         # import CGI module
         try:
