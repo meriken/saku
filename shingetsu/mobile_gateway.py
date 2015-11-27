@@ -46,6 +46,8 @@ from .template import Template
 from .updatequeue import UpdateQueue
 from .util import opentext
 
+import markdown
+import bleach
 
 dummyquery = str(int(time.time()));
 
@@ -296,29 +298,56 @@ class CGI(basecgi.CGI):
 
     def html_format(self, plain, appli, title, absuri=False):
         buf = plain.replace("<br>", "\n")
-        buf = buf.expandtabs()
-        buf = self.escape(buf)
-        buf = re.sub(r"https?://[^\x00-\x20\"'()<>\[\]\x7F-\xFF]{2,}",
-                     r'<a href="\g<0>">\g<0></a>',
-                     buf)
-        buf = re.sub(r'\[gist:([a-f0-9]+)\]', r'<script src="https://gist.github.com/\1.js"></script>', buf);
-        buf = re.sub(r"(&gt;&gt;)([0-9a-f]{8})",
-                     self.res_anchor(r"\2", appli, title, absuri=absuri) +
-                     r"\g<0></a>",
-                     buf)
-        buf = re.sub(r'\[\[<a.*?>(.*?)\]\]</a>', r'[[\1]]', buf)
-
         tmp = ""
-        while buf:
-            m = re.search(r"\[\[([^<>]+?)\]\]", buf)
-            if m is not None:
-                tmp += buf[:m.start()]
-                tmp += self.bracket_link(m.group(1), appli, absuri=absuri)
-                buf = buf[m.end():]
-            else:
-                tmp += buf
-                buf = ""
-        return self.escape_space(tmp)
+        m = re.match('^@markdown([ \t]+[^\n]*)?\n(.*)$', buf, re.DOTALL)
+        if m:
+            tags = ['strong', 'sup', 'hr', 'dd', 'dl', 'dt', 'abbr', 'div', 'span', 'p', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'pre', 'code', 'ol', 'ul', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'em', 'a']
+            extensions = [
+                'markdown.extensions.extra',
+                'markdown.extensions.admonition',
+                'markdown.extensions.codehilite',
+                'markdown.extensions.headerid',
+                'markdown.extensions.meta',
+                'markdown.extensions.nl2br',
+                'markdown.extensions.sane_lists',
+                'markdown.extensions.smarty',
+                'markdown.extensions.toc',
+                # 'markdown.extensions.wikilinks',
+            ]
+            attrs = {
+                '*': ['class'],
+                'a': ['href', 'rel'],
+                'img': ['src', 'alt'],
+                'abbr': ['title'],
+            }
+            tmp = re.sub('&lt;', '<', m.group(2))
+            tmp = re.sub('&gt;', '>', tmp)
+            tmp = bleach.clean(markdown.markdown(tmp, extensions=extensions), attributes=attrs, tags=tags)
+        else:
+            buf = buf.expandtabs()
+            buf = self.escape(buf)
+            buf = re.sub(r"https?://[^\x00-\x20\"'()<>\[\]\x7F-\xFF]{2,}",
+                         r'<a href="\g<0>">\g<0></a>',
+                         buf)
+            buf = re.sub(r'\[gist:([a-f0-9]+)\]', r'<script src="https://gist.github.com/\1.js"></script>', buf);
+            buf = re.sub(r"(&gt;&gt;)([0-9a-f]{8})",
+                         self.res_anchor(r"\2", appli, title, absuri=absuri) +
+                         r"\g<0></a>",
+                         buf)
+            buf = re.sub(r'\[\[<a.*?>(.*?)\]\]</a>', r'[[\1]]', buf)
+
+            tmp = ""
+            while buf:
+                m = re.search(r"\[\[([^<>]+?)\]\]", buf)
+                if m is not None:
+                    tmp += buf[:m.start()]
+                    tmp += self.bracket_link(m.group(1), appli, absuri=absuri)
+                    buf = buf[m.end():]
+                else:
+                    tmp += buf
+                    buf = ""
+            tmp = self.escape_space(tmp)
+        return tmp
 
     def bracket_link(self, link, appli, absuri=False):
         """Encode bracket string to link.
