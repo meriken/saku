@@ -31,7 +31,6 @@
 import os
 import threading
 import http.server
-import http.server
 
 from . import config
 from . import LightCGIHTTPServer

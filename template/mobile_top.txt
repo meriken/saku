@@ -1,4 +1,4 @@
-<h2><span style="white-space:nowrap;word-break:keep-all;">{{message.description}}</span> <span style="white-space:nowrap;word-break:keep-all;">「{{message.logo}}」</span></h2>
+<h2 style='font-size: 28px'>{{message.logo}}</h2>
 
 <p>
 	「{{message.logo}}」は<a href="http://shingetsu.info">新月ネットワーク</a>に参加している<a href="https://ja.wikipedia.org/wiki/Peer_to_Peer">P2P</a>匿名掲示版です。<br />
@@ -32,47 +32,47 @@
 {% else %}
 		<div class="btn-group btn-group-sm" role="group">
 			{% for tag in ['質問', '雑談', 'ニュース', '実況'] %}
-				<a class='btn btn-success' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+				<a class='btn btn-success' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='min-width:39px;margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
 			{% endfor %}
 		</div>
 		<div class="btn-group btn-group-sm" role="group">
 			{% for tag in ['生活', '料理', '日課'] %}
-				<a class='btn btn-success' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+				<a class='btn btn-success' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='min-width:39px;margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
 			{% endfor %}
 		</div>
 		<div class="btn-group btn-group-sm" role="group">
 			{% for tag in ['画像', '動画', '二次元', '三次元', '18禁'] %}
-				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='min-width:39px;margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
 			{% endfor %}
 		</div>
 		<div class="btn-group btn-group-sm" role="group">
 			{% for tag in ['趣味', '音楽', 'テレビ'] %}
-				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='min-width:39px;margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
 			{% endfor %}
 		</div>
 		<div class="btn-group btn-group-sm" role="group">
 			{% for tag in ['漫画', 'アニメ', 'ゲーム', '2ch'] %}
-				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='min-width:39px;margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
 			{% endfor %}
 		</div>
 		<div class="btn-group btn-group-sm" role="group">
 			{% for tag in ['PC', 'IT', 'ソフトウェア'] %}
-				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='min-width:39px;margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
 			{% endfor %}
 		</div>
 		<div class="btn-group btn-group-sm" role="group">
 			{% for tag in ['開発', 'プログラミング', 'P2P'] %}
-				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='min-width:39px;margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
 			{% endfor %}
 		</div>
 		<div class="btn-group btn-group-sm" role="group">
 			{% for tag in ['新月', '運用', 'スレ一覧', 'テスト'] %}
-				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='min-width:39px;margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
 			{% endfor %}
 		</div>
 		<div class="btn-group btn-group-sm" role="group">
 			{% for tag in ['きれいな新月', '裏'] %}
-				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
+				<a class='btn btn-success btn-sm' href='{{mobile_gateway_cgi}}/threads?tag={{tag | urlencode}}' style='min-width:39px;margin-right:0px;margin-bottom:5px;'>{{tag}}</a>
 			{% endfor %}
 		</div>
 {% endif %}

@@ -155,7 +155,7 @@ class CGI(mobile_gateway.CGI):
         #        output_cachelist.append(cache)
         #self.header(message['logo'] + ' - ' + message['description'])
         var = {
-            'page_title': 'トップ - ' + self.message['logo'],
+            'page_title': '目次 - ' + self.message['logo'],
         #    'cachelist': output_cachelist,
             'target': 'changes',
             'taglist': UserTagList(),
@@ -319,6 +319,7 @@ class CGI(mobile_gateway.CGI):
             'suffixes': suffixes,
             'limit': config.record_limit * 3 // 4,
             'post_message': self.form.getfirst('message', ''),
+            'extra_js': 'thread',
         }
         #self.stdout.write(self.template('thread_bottom', var))
         self.stdout.write(self.template('mobile_thread_footer', var))
@@ -508,6 +509,7 @@ class CGI(mobile_gateway.CGI):
         var = {
             'page_title': '新着レスまとめ読み',
             'cookie': newcookie,
+            'extra_js': 'new_posts',
         }
         self.stdout.write(self.template('mobile_header', var))
         self.stdout.write(self.template('mobile_new_posts_header', var))

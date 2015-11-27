@@ -231,7 +231,7 @@ class HTTPRequestHandler(http.server.CGIHTTPRequestHandler):
         decoded_query = query.replace('+', ' ')
 
         if not config.re_admin.search(env["REMOTE_ADDR"]):
-            if script == 'gateway.cgi' and config.force_mobile_cgi_for_visitors_and_friends:
+            if script == 'gateway.cgi' and rest != '/rss' and config.force_mobile_cgi_for_visitors_and_friends:
                 self.wfile.write(('HTTP/1.1 301 Moved Permanently\n').encode('ascii'))
                 self.wfile.write(('Location: ' + config.mobile_gateway + rest + '\n\n').encode('ascii'))
                 return

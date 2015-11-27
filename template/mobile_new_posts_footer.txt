@@ -1,28 +1,2 @@
 <script>
-	function initializePostMenus() {
-		$('.post-menu-reply')
-			.unbind("click")
-			.unbind("touchstart")
-			.bind("touchstart", function (e) { e.stopPropagation();})
-			.click(function (e) { 
-				$(this).parent().parent().parent().children('.dropdown-toggle').dropdown('toggle');
-				e.stopPropagation(); 
-				message = '>>' + $(this).attr('data-sid') +'\n';
-				window.open('{{mobile_gateway_cgi}}/thread/' + $(this).attr('data-str-path') + '/' + $(this).attr('data-sid') + '?message=' + encodeURIComponent(message), '_blank');
-			});
-		$('.post-menu-reply-with-quote')
-			.unbind("click")
-			.unbind("touchstart")
-			.bind("touchstart", function (e) { e.stopPropagation();})
-			.click(function (e) { 
-				var quote =  $.trim($('#r' + $(this).attr('data-sid') + ' .panel-body').text());
-				quote = (quote.length ? ('> ' + quote.replace(/\r?\n/g, '\n> ') + '\n\n') : '');
-				$(this).parent().parent().parent().children('.dropdown-toggle').dropdown('toggle');
-				e.stopPropagation(); 
-				message = '>>' + $(this).attr('data-sid') +'\n' + quote;
-				window.open('{{mobile_gateway_cgi}}/thread/' + $(this).attr('data-str-path') + '/' + $(this).attr('data-sid') + '?message=' + encodeURIComponent(message), '_blank');
-			});
-
-	}
-	initializePostMenus();
 </script>
