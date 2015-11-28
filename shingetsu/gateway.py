@@ -497,6 +497,7 @@ class CGI(basecgi.CGI):
         else:
             suffix = suffix.lower()
         suffix = re.sub(r"[^0-9A-Za-z]", "", suffix)
+        suffix = re.sub(r"^jpeg$", "jpg", suffix)
 
         if form.getfirst("error", "") != "":
             stamp = self.error_time()

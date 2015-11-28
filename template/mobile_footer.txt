@@ -1,4 +1,4 @@
-			<a id='qrcode-button' class='btn btn-default'><span style="top:3px;" class="glyphicon glyphicon-barcode"></span> QRコード</a>
+			<a id='qrcode-button' class='btn btn-default'><span style="top:2px;" class="glyphicon glyphicon-barcode"></span></a>
 		
 			<div id='qrcode-panel' class="panel panel-default" style='margin-top:0; max-width:160px; display: none;'>
 				<div id='qrcode-panel-heading' class="panel-heading" style=''>
