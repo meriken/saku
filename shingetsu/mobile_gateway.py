@@ -330,6 +330,7 @@ class CGI(basecgi.CGI):
                          r'<a href="\g<0>">\g<0></a>',
                          buf)
             buf = re.sub(r'\[gist:([a-f0-9]+)\]', r'<script src="https://gist.github.com/\1.js"></script>', buf);
+            buf = re.sub(r':([a-z_]+):', r'<span class="emoji" data-shortname=":\1:">:\1:</span>', buf);
             buf = re.sub(r"(&gt;&gt;)([0-9a-f]{8})",
                          self.res_anchor(r"\2", appli, title, absuri=absuri) +
                          r"\g<0></a>",

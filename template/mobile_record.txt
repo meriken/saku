@@ -55,6 +55,9 @@
 			<ul class="dropdown-menu">
 				<li><a id="post-{{sid}}-menu-reply"            class="post-menu-reply"            data-sid="{{sid}}" data-str-path="{{str_path}}">このレスに返信</a></li>
 				<li><a id="post-{{sid}}-menu-reply-with-quote" class="post-menu-reply-with-quote" data-sid="{{sid}}" data-str-path="{{str_path}}">このレスに返信(引用付き)</a></li>
+				<li role="separator" class="divider">Divider</li>
+				<li><a href="http://bbs.shingetsu.info/thread.cgi/{{path | urlencode}}/{{sid}}" target="_blank">このレスをbbs.shingetsu.infoで開く</a></li>
+				<li><a href="http://rep4649.ddo.jp:8000/thread.cgi/{{path | urlencode}}/{{sid}}" target="_blank">このレスをrep4649.ddo.jpで開く</a></li>
 {% if ('attach' in rec) %}
 				<li role="separator" class="divider">Divider</li>
 				<li><a download href="{{mobile_gateway_cgi}}/thread/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}">添付ファイルを保存</a></li>
@@ -84,7 +87,7 @@
 {% elif ('attach' in rec) and (suffix in ('jpg', 'jpeg', 'gif', 'png')) %}
 {% if body != '' %}<br />{% endif %}
 		<div style="overflow: hidden;">
-			<img id="post-{{sid}}-image" class="post-image" src="{{mobile_gateway_cgi}}/thread/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}" height="210" alt="" style="" />
+			<img id="post-{{sid}}-image" class="post-image" src="{{mobile_gateway_cgi}}/thread/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}" max-height="210" alt="" style="" />
 		</div>
 {% endif %}
 {% if not ajax %}

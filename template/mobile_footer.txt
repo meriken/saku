@@ -343,6 +343,10 @@
 					});
 				}
 				checkForNewPosts();
+
+				$('.emoji').each(function () {
+					$(this).html(emojione.shortnameToImage($(this).attr('data-shortname')));
+				});
 			});
 		</script>
 		<script src="/bootstrap/js/bootstrap.min.js"></script>
@@ -351,16 +355,10 @@
 		<script src="/bootstrap-image-gallery/js/bootstrap-image-gallery.js"></script>
 		<script src="/jquery/jquery.hoverIntent.js"></script>
 		<script src="/jquery/jquery.qrcode.min.js"></script>
-		<script>
-			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-			})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-			ga('create', 'UA-58958932-3', 'auto');
-			ga('send', 'pageview');
-		</script>
+		<script src="//cdn.jsdelivr.net/emojione/1.5.2/lib/js/emojione.min.js"></script>
 	</body>
 	<link rel="stylesheet" href="/blueimp-gallery/css/blueimp-gallery.min.css">
 	<link rel="stylesheet" href="/bootstrap-image-gallery/css/bootstrap-image-gallery.css">
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/emojione/1.5.2/assets/css/emojione.min.css"/>
+	<style>img.emojione {width: 16px; height:16px;min-width: 16px; min-height:16px;}</style>
 </html>
