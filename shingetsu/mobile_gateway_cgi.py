@@ -87,6 +87,8 @@ class CGI(mobile_gateway.CGI):
             return
         elif path == "motd":
             self.print_motd()
+        elif path == 'check-for-new-posts':
+            self.check_for_new_posts()
         elif path == "new-posts":
             self.print_new_posts()
         elif path in ("recent", "create-new-thread"):
@@ -464,6 +466,29 @@ class CGI(mobile_gateway.CGI):
         self.stdout.write(self.template('mobile_threads_footer', var))
         self.stdout.write(self.template('mobile_footer', var))
             
+    def check_for_new_posts(self):
+        cookie = None
+        if config.use_cookie:
+            cookie = SimpleCookie(self.environ.get('HTTP_COOKIE', ''))
+        new_posts = False
+        cachelist = CacheList()
+        for cache in cachelist:
+            if cache and cache.type == 'thread':
+                # self.stdout.write(self.make_list_item(cache, target='changes', search=False, cookie=cookie))
+                x = self.file_decode(cache.datfile)
+                file_path = self.file_encode('thread', x)
+                if cookie and 'access_' + file_path in cookie:
+                    new_posts = True
+                    if 'access_new_posts' in cookie and cache.valid_stamp <= int(cookie['access_new_posts'   ].value): new_posts = False
+                    if 'access_' + file_path in cookie and cache.valid_stamp <= int(cookie['access_' + file_path].value): new_posts = False
+                    if new_posts:
+                        break
+        if new_posts:
+            self.stdout.write("Content-Type: text/plain; charset=UTF-8\n\nYES")
+        else:
+            self.stdout.write("Content-Type: text/plain; charset=UTF-8\n\nNO")
+                
+   
     def print_index(self):
         """Print index page."""
         if self.str_filter:

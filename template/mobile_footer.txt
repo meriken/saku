@@ -243,7 +243,6 @@
 					return true;
 				});
 			}
-			// The following cannot be moved inside $(document).ready()
 
 			$(document).ready(function() {
 				initializeAnchors();
@@ -333,6 +332,17 @@
 					$('#qrcode-button').css('display', 'inline-block');
 					$('#qrcode-panel').css('display', 'none');
 				});
+
+				function checkForNewPosts() {
+					$.ajax('{{mobile_gateway_cgi}}/check-for-new-posts', {
+						async: true,
+						success: function(data) {
+							$('.new-post-notification-area, .navbar button.navbar-toggle.collapsed').css('background-color', data =='YES' ? '#fee' : '')
+							setTimeout(checkForNewPosts, 60 * 1000)
+						}
+					});
+				}
+				checkForNewPosts();
 			});
 		</script>
 		<script src="/bootstrap/js/bootstrap.min.js"></script>
