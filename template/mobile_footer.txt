@@ -92,7 +92,15 @@
 						$('#postarticle #body').val('>>' + $(this).attr('data-sid') +'\n' + quote + $('#postarticle #body').val()).focus();
 						jumpToPostForm();
 					});
-
+				$('.post-menu-ascii2d, .post-menu-tineye')
+					.unbind("click")
+					.unbind("touchstart")
+					.bind("touchstart", function (e) { e.stopPropagation();})
+					.click(function (e) { 
+						e.stopPropagation(); 
+						$(this).parent().parent().parent().children('.dropdown-toggle').dropdown('toggle');
+						$('#' + $(this).attr('data-form-id'))[0].submit();
+					});
 			}
 	
 			$( document ).ready(function() {
@@ -169,6 +177,27 @@
 						e.stopPropagation(); 
 						message = '>>' + $(this).attr('data-sid') +'\n' + quote;
 						window.open('{{mobile_gateway_cgi}}/thread/' + $(this).attr('data-str-path') + '/' + $(this).attr('data-sid') + '?message=' + encodeURIComponent(message), '_blank');
+					});
+				$('.post-menu-reply-with-quote')
+					.unbind("click")
+					.unbind("touchstart")
+					.bind("touchstart", function (e) { e.stopPropagation();})
+					.click(function (e) { 
+						var quote =  $.trim($('#r' + $(this).attr('data-sid') + ' .panel-body').first().text());
+						quote = (quote.length ? ('> ' + quote.replace(/\r?\n/g, '\n> ') + '\n\n') : '');
+						e.stopPropagation(); 
+						$(this).parent().parent().parent().children('.dropdown-toggle').dropdown('toggle');
+						$('#postarticle #body').val('>>' + $(this).attr('data-sid') +'\n' + quote + $('#postarticle #body').val()).focus();
+						jumpToPostForm();
+					});
+				$('.post-menu-ascii2d, .post-menu-tineye')
+					.unbind("click")
+					.unbind("touchstart")
+					.bind("touchstart", function (e) { e.stopPropagation();})
+					.click(function (e) { 
+						e.stopPropagation(); 
+						$(this).parent().parent().parent().children('.dropdown-toggle').dropdown('toggle');
+						$('#' + $(this).attr('data-form-id'))[0].submit();
 					});
 			}
 
@@ -299,7 +328,7 @@
 					});
 				});
 
-				$('.post-image').on('click', function (event) {
+				$('.post-image, .post-menu-view-image').on('click', function (event) {
 					$('#blueimp-gallery').data('useBootstrapModal', false);
 					$('#blueimp-gallery').toggleClass('blueimp-gallery-controls', true);
 					event.preventDefault();

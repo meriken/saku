@@ -58,16 +58,32 @@
 				<li role="separator" class="divider">Divider</li>
 				<li><a href="http://bbs.shingetsu.info/thread.cgi/{{path | urlencode}}/{{sid}}" target="_blank">このレスをbbs.shingetsu.infoで開く</a></li>
 				<li><a href="http://rep4649.ddo.jp:8000/thread.cgi/{{path | urlencode}}/{{sid}}" target="_blank">このレスをrep4649.ddo.jpで開く</a></li>
+				<li><a href="http://shingetu.fe100.net:8000/thread.cgi/{{path | urlencode}}/{{sid}}" target="_blank">このレスをshingetu.fe100.netで開く</a></li>
 {% if ('attach' in rec) %}
 				<li role="separator" class="divider">Divider</li>
 				<li><a download href="{{mobile_gateway_cgi}}/thread/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}">添付ファイルを保存</a></li>
-{#
+{% endif %}
+{% if ('attach' in rec) and (suffix in ('jpg', 'jpeg', 'gif', 'png')) %}
+{% if server_name %}
+				{% set image_url = 'http://' + server_name + mobile_gateway_cgi + '/thread/' + cache.datfile + '/' + rec.id + '/' + (rec.stamp|string) + '.' + suffix %}
+{% else %}
+				{% set image_url = 'http://shingetsu.ygch.net' + mobile_gateway_cgi + '/thread/' + cache.datfile + '/' + rec.id + '/' + (rec.stamp|string) + '.' + suffix %}
+{% endif %}
 				<li role="separator" class="divider">Divider</li>
-				<li><a href="#">添付画像を表示</a></li>
-				<li><a href="#">Google画像検索</a></li>
-				<li><a href="#">二次元画像詳細検索</a></li>
-				<li><a href="#">TinEye (画像検索)</a></li>
- #}
+				<li><a class="post-menu-view-image" src="{{mobile_gateway_cgi}}/thread/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}">添付画像を拡大表示</a></li>
+				<li><a href="{{ 'https://images.google.co.jp/searchbyimage?image_url=' + (image_url|urlencode) }}" target="_blank">Google画像検索</a></li>
+				<li>
+					<form id="post-{{sid}}-menu-ascii2d-form" action="http://www.ascii2d.net/imagesearch/search" method="POST" target="_blank">
+					<input type="hidden" name="uri" value="{{image_url}}" />
+ 					</form>
+					<a class="post-menu-ascii2d" data-form-id="post-{{sid}}-menu-ascii2d-form" target="_blank">二次元画像詳細検索</a>
+				</li>
+				<li>
+					<form id="post-{{sid}}-menu-tineye-form" action="https://www.tineye.com/search" method="POST" target="_blank">
+					<input type="hidden" name="url" value="{{image_url}}" />
+ 					</form>
+					<a class="post-menu-tineye" data-form-id="post-{{sid}}-menu-tineye-form" target="_blank">TinEyeで画像検索</a>
+				</li>
 {% endif %}
 			</ul>
 		</div>

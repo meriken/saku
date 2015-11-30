@@ -393,6 +393,7 @@ class CGI(mobile_gateway.CGI):
             'res_anchor': self.res_anchor,
             'thumbnail': thumbnail_size,
             'new_record': new_record,
+            'server_name': config.server_name,
         }
         self.stdout.write(self.template('mobile_record', var))
 
