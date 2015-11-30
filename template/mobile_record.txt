@@ -87,7 +87,7 @@
 {% elif ('attach' in rec) and (suffix in ('jpg', 'jpeg', 'gif', 'png')) %}
 {% if body != '' %}<br />{% endif %}
 		<div style="overflow: hidden;">
-			<img id="post-{{sid}}-image" class="post-image" src="{{mobile_gateway_cgi}}/thread/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}" max-height="210" alt="" style="" />
+			<img id="post-{{sid}}-image" class="post-image" src="{{mobile_gateway_cgi}}/thread/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}" style="width:auto;height:auto;max-height:210px;max-width:100%" alt="" style="" />
 		</div>
 {% endif %}
 {% if not ajax %}

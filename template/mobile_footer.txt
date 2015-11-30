@@ -347,6 +347,9 @@
 				$('.emoji').each(function () {
 					$(this).html(emojione.shortnameToImage($(this).attr('data-shortname')));
 				});
+				$('.unicode-emoji').each(function () {
+					$(this).html(emojione.unicodeToImage($(this).text()));
+				});
 			});
 		</script>
 		<script src="/bootstrap/js/bootstrap.min.js"></script>
