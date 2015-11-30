@@ -340,11 +340,7 @@ class CGI(basecgi.CGI):
             # Gist
             buf = re.sub(r'\[gist:([a-f0-9]+)\]', r'<script src="https://gist.github.com/\1.js"></script>', buf);
             # emojione
-            try:
-                highpoints = re.compile(u'([\U00002600-\U000027BF])|([\U0001f300-\U0001f64F])|([\U0001f680-\U0001f6FF])')
-            except re.error:
-                highpoints = re.compile(u'([\u2600-\u27BF])|([\uD83C][\uDF00-\uDFFF])|([\uD83D][\uDC00-\uDE4F])|([\uD83D][\uDE80-\uDEFF])')
-            buf = highpoints.sub(r'<span class="unicode-emoji">\g<0></span>', buf)
+            buf = re.sub(u'([\U00002600-\U000027BF]|[\U0001f170-\U0001f251]|[\U0001f300-\U0001f64F]|[\U0001f680-\U0001f6FF])+', r'<span class="unicode-emoji">\g<0></span>', buf)
             buf = re.sub(r':([a-z_]+|\+1):', r'<span class="emoji" data-shortname=":\1:">:\1:</span>', buf);
             #
             buf = re.sub(r"(&gt;&gt;)([0-9a-f]{8})",
