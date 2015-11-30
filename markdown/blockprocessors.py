@@ -272,6 +272,7 @@ class BlockQuoteProcessor(BlockProcessor):
             block = '\n'.join(
                 [self.clean(line) for line in block[m.start():].split('\n')]
             )
+            block = re.sub(r'((?!  ).[^\n])\n(?!\n)', r'\1 ', block); # Added by Meriken
         sibling = self.lastChild(parent)
         if sibling is not None and sibling.tag == "blockquote":
             # Previous block was a blockquote so set that as this blocks parent
