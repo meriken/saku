@@ -28,29 +28,29 @@ href.*http
 
 <>body:comment[0-9+],
 
-# 名前とメールがあって、ひらがな・カタカナがない
-<>body:[^\u3040-\u30FF\u31F0-\u31FF]+<>mail:[^\u3040-\u30FF\u31F0-\u31FF]+<>name:[^\u3040-\u30FF\u31F0-\u31FF]+$
-<>body:[^\u3040-\u30FF\u31F0-\u31FF]+<>name:[^\u3040-\u30FF\u31F0-\u31FF]+<>mail:[^\u3040-\u30FF\u31F0-\u31FF]+$
-<>name:[^\u3040-\u30FF\u31F0-\u31FF]+<>mail:[^\u3040-\u30FF\u31F0-\u31FF]+<>body:[^\u3040-\u30FF\u31F0-\u31FF]+$
-<>name:[^\u3040-\u30FF\u31F0-\u31FF]+<>body:[^\u3040-\u30FF\u31F0-\u31FF]+<>mail:[^\u3040-\u30FF\u31F0-\u31FF]+$
-<>mail:[^\u3040-\u30FF\u31F0-\u31FF]+<>name:[^\u3040-\u30FF\u31F0-\u31FF]+<>body:[^\u3040-\u30FF\u31F0-\u31FF]+$
-<>mail:[^\u3040-\u30FF\u31F0-\u31FF]+<>body:[^\u3040-\u30FF\u31F0-\u31FF]+<>name:[^\u3040-\u30FF\u31F0-\u31FF]+$
+# 名前とメールがあって、本文にひらがな・カタカナがない
+<>body:[^\u3040-\u30FF\u31F0-\u31FF]+<>mail:(?!<>).+<>name:(?!<>).+$
+<>body:[^\u3040-\u30FF\u31F0-\u31FF]+<>name:(?!<>).+<>mail:(?!<>).+$
+<>name:(?!<>).+<>body:[^\u3040-\u30FF\u31F0-\u31FF]+<>mail:(?!<>).+$
+<>mail:(?!<>).+<>body:[^\u3040-\u30FF\u31F0-\u31FF]+<>name:(?!<>).+$
+<>name:(?!<>).+<>mail:(?!<>).+<>body:[^\u3040-\u30FF\u31F0-\u31FF]+$
+<>mail:(?!<>).+<>name:(?!<>).+<>body:[^\u3040-\u30FF\u31F0-\u31FF]+$
 
 # 名前とメールがあって、特定のキーワードが本文にある
-<>name:[^<>]+<>mail:[^<>]+<>body:[^<>]*(page and noticed you could have a lot more traffic|ケイト・スペード|シドニーハミルトン|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci)[^<>]*$
-<>mail:[^<>]+<>name:[^<>]+<>body:[^<>]*(page and noticed you could have a lot more traffic|ケイト・スペード|シドニーハミルトン|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci)[^<>]*$
-<>name:[^<>]+<>body:[^<>]*(page and noticed you could have a lot more traffic|ケイト・スペード|シドニーハミルトン|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci)[^<>]*<>mail:[^<>]+$
-<>mail:[^<>]+<>body:[^<>]*(page and noticed you could have a lot more traffic|ケイト・スペード|シドニーハミルトン|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci)[^<>]*<>name:[^<>]+$
-<>body:[^<>]*(page and noticed you could have a lot more traffic|ケイト・スペード|シドニーハミルトン|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci)[^<>]*<>name:[^<>]+<>mail:[^<>]+$
-<>body:[^<>]*(page and noticed you could have a lot more traffic|ケイト・スペード|シドニーハミルトン|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci)[^<>]*<>mail:[^<>]+<>name:[^<>]+$
+<>name:(?!<>).+<>mail:(?!<>).+<>body:(?!<>).*ジミーチュウ|ダンヒル|ゴヤール|クリスチャンディオール|[Aa]mbien|(page and noticed you could have a lot more traffic|ケイト・スペード|シドニーハミルトン|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci)(?!<>).*$
+<>mail:(?!<>).+<>name:(?!<>).+<>body:(?!<>).*ジミーチュウ|ダンヒル|ゴヤール|クリスチャンディオール|[Aa]mbien|(page and noticed you could have a lot more traffic|ケイト・スペード|シドニーハミルトン|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci)(?!<>).*$
+<>name:(?!<>).+<>body:(?!<>).*ジミーチュウ|ダンヒル|ゴヤール|クリスチャンディオール|[Aa]mbien|(page and noticed you could have a lot more traffic|ケイト・スペード|シドニーハミルトン|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci)(?!<>).*<>mail:(?!<>).+$
+<>mail:(?!<>).+<>body:(?!<>).*ジミーチュウ|ダンヒル|ゴヤール|クリスチャンディオール|[Aa]mbien|(page and noticed you could have a lot more traffic|ケイト・スペード|シドニーハミルトン|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci)(?!<>).*<>name:(?!<>).+$
+<>body:(?!<>).*ジミーチュウ|ダンヒル|ゴヤール|クリスチャンディオール|[Aa]mbien|(page and noticed you could have a lot more traffic|ケイト・スペード|シドニーハミルトン|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci)(?!<>).*<>name:(?!<>).+<>mail:(?!<>).+$
+<>body:(?!<>).*ジミーチュウ|ダンヒル|ゴヤール|クリスチャンディオール|[Aa]mbien|(page and noticed you could have a lot more traffic|ケイト・スペード|シドニーハミルトン|ルミノックス|LUMINOX|kate spade|スント|SUUNTO|ドルチェ| ガッバーナ|diesel|ディーゼル|キッチン調理用機器|スマートウォッチ|スマートフォン|スマートガジェット|人気商品|トリーバーチ|レイバン|オークリー|パーカー|[Vv]iagra|[Gg]ucci)(?!<>).*<>mail:(?!<>).+<>name:(?!<>).+$
 
 # 名前とメールがあって、URLが1個以上本文にある
-<>name:[^<>]+<>mail:[^<>]+<>body:[^<>]*((href|https?)://.+){1}[^<>]*$
-<>mail:[^<>]+<>name:[^<>]+<>body:[^<>]*((href|https?)://.+){1}[^<>]*$
-<>name:[^<>]+<>body:[^<>]*((href|https?)://.+){1}[^<>]*<>mail:[^<>]+$
-<>mail:[^<>]+<>body:[^<>]*((href|https?)://.+){1}[^<>]*<>name:[^<>]+$
-<>body:[^<>]*((href|https?)://.+){1}[^<>]*<>name:[^<>]+<>mail:[^<>]+$
-<>body:[^<>]*((href|https?)://.+){1}[^<>]*<>mail:[^<>]+<>name:[^<>]+$
+<>name:(?!<>).+<>mail:(?!<>).+<>body:(?!<>).*((href|https?)://.+){1}(?!<>).*$
+<>mail:(?!<>).+<>name:(?!<>).+<>body:(?!<>).*((href|https?)://.+){1}(?!<>).*$
+<>name:(?!<>).+<>body:(?!<>).*((href|https?)://.+){1}(?!<>).*<>mail:(?!<>).+$
+<>mail:(?!<>).+<>body:(?!<>).*((href|https?)://.+){1}(?!<>).*<>name:(?!<>).+$
+<>body:(?!<>).*((href|https?)://.+){1}(?!<>).*<>name:(?!<>).+<>mail:(?!<>).+$
+<>body:(?!<>).*((href|https?)://.+){1}(?!<>).*<>mail:(?!<>).+<>name:(?!<>).+$
 
 <>body:\]
 <>body:,
