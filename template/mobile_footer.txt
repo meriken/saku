@@ -273,8 +273,25 @@
 				});
 			}
 
-			$(document).ready(function() {
+			function displayEmojis() {
+				$('.emoji:not(.processed)').each(function () {
+					$(this).html(emojione.shortnameToImage($(this).attr('data-shortname')));
+					$(this).addClass('processed');
+				});
+				$('.unicode-emoji:not(.processed)').each(function () {
+					$(this).html(emojione.unicodeToImage($(this).text()));
+					$(this).addClass('processed');
+				});
+			}
+
+			function updatePosts() {
+				displayEmojis();
 				initializeAnchors();
+			}
+
+			$(document).ready(function() {
+				updatePosts();
+
 				$(document)
 					.bind("mouseup",  function (e) { e.stopPropagation(); $('.anchor').tooltip('hide'); $('.tooltip').remove(); })
 					.bind("touchend", function (e) { e.stopPropagation(); $('.anchor').tooltip('hide'); $('.tooltip').remove(); });
@@ -334,14 +351,16 @@
 						$('#blueimp-gallery').data());
 				});
 
+				/*
 				$('.dropdown-toggle').click(function (){
 					var button = $(this);
 					var dropdown = button.parent().children('.dropdown-menu');
 					var dropdownWidth = dropdown.width();
-					dropdown.css('top', button.offset().top - $('body').scrollTop() + button.outerHeight() + "px");
-					dropdown.css('left', button.offset().left - dropdown.outerWidth() + button.outerWidth() + "px");
+					dropdown.css('top', (button.offset().top - $('body').scrollTop() + button.outerHeight()).toString() + "px");
+					dropdown.css('left', (button.offset().left - dropdown.outerWidth() + button.outerWidth()).toString() + "px");
 					dropdown.width(dropdownWidth);
 				});
+				*/
 
 				$('#qrcode').qrcode({width: 128, height: 128, text: window.location.href});
 				$('#qrcode-button').click(function () {
@@ -358,19 +377,13 @@
 					$.ajax('{{mobile_gateway_cgi}}/check-for-new-posts', {
 						async: true,
 						success: function(data) {
-							$('.new-post-notification-area, .navbar button.navbar-toggle.collapsed').css('background-color', data =='YES' ? '#fee' : '')
+							console.log(data);
+							$('.new-post-notification-area, .navbar button.navbar-toggle.collapsed').css('background-color', data.toString() == 'YES' ? '#fee' : '')
 							setTimeout(checkForNewPosts, 60 * 1000)
 						}
 					});
 				}
 				checkForNewPosts();
-
-				$('.emoji').each(function () {
-					$(this).html(emojione.shortnameToImage($(this).attr('data-shortname')));
-				});
-				$('.unicode-emoji').each(function () {
-					$(this).html(emojione.unicodeToImage($(this).text()));
-				});
 
 				// Post Form
 				$("#post-form-tabs > li").click(function () {
