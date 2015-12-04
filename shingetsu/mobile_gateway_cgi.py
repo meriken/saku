@@ -44,6 +44,7 @@ from http.cookies import SimpleCookie
 import mimetypes
 from . import attachutil
 
+import hashlib
 import random
 
 class CGI(mobile_gateway.CGI):
@@ -174,7 +175,7 @@ class CGI(mobile_gateway.CGI):
     def print_thread(self, path, id='', page=0):
         str_path = self.str_encode(path)
         file_path = self.file_encode('thread', path)
-        form = cgi.FieldStorage(environ=self.environ, fp=self.stdin)
+        form = self.form
         cache = Cache(file_path)
         if cache.has_record():
             pass
@@ -189,10 +190,11 @@ class CGI(mobile_gateway.CGI):
             return
 
         ajax = form.getfirst('ajax')
+        preview = form.getfirst('preview')
         related_threads = form.getfirst('related_threads')
         if id and ajax:
             self.stdout.write("Content-Type: text/html; charset=UTF-8\n\n");
-
+    
             found = False
             for k in list(cache.keys()):
                 rec = cache[k]
@@ -203,6 +205,20 @@ class CGI(mobile_gateway.CGI):
                 self.stdout.write("<script>initializeAnchors();</script>")
             else:
                 self.stdout.write("レスが見つかりません")
+            return
+        elif preview and ajax:
+            self.stdout.write("Content-Type: text/html; charset=UTF-8\n\n");
+            rec = Record()
+            rec['id'] = '????????' #(hashlib.md5("whatever your string is".encode('utf-8')).hexdigest())
+            rec['name'] = form.getfirst('name')
+            rec['mail'] = form.getfirst('mail')
+            rec.stamp = time.time()
+            if form.getfirst('body'):
+                rec['body'] = form.getfirst('body')
+            else:
+                rec['body'] = ''
+            self.print_record(cache, rec, path, str_path, False, ajax, preview=True)
+            self.stdout.write("<script>initializeAnchors();</script>")
             return
         elif related_threads and ajax:
             related_threads = None;
@@ -357,7 +373,7 @@ class CGI(mobile_gateway.CGI):
         cookie['access_new_posts']['expires'] = expires
         return cookie
 
-    def print_record(self, cache, rec, path, str_path, new_record, ajax):
+    def print_record(self, cache, rec, path, str_path, new_record, ajax, preview=False):
         thumbnail_size = None
         if 'attach' in rec:
             attach_file = rec.attach_path()
@@ -393,7 +409,7 @@ class CGI(mobile_gateway.CGI):
             'res_anchor': self.res_anchor,
             'thumbnail': thumbnail_size,
             'new_record': new_record,
-            'server_name': config.server_name,
+            'preview': preview,
         }
         self.stdout.write(self.template('mobile_record', var))
 

@@ -2,7 +2,7 @@
  # Copyright (c) 2005-2014 shinGETsu Project.
  #}
 
-{% if not ajax %}
+{% if not ajax or preview %}
 <div id="r{{sid}}" class="panel panel-default {% if new_record %}new-record panel-danger{% else %}old-record{% endif %}">
 	<div class="panel-heading" style="color:black;">
 {% else %}
@@ -46,8 +46,8 @@
 {% endif %}
         </span>
 
-{% if not ajax %}
-		<div class="btn-group pull-right" style="vertical-align:middle;">
+{% if not ajax or preview %}
+		<div class="btn-group pull-right" style="vertical-align:middle;{% if preview %}display:none;{% endif %}">
 			<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding: 2px 6px 0px 6px;">
 				<span class="glyphicon glyphicon-cog"></span>
 				<span class="caret" style="margin-top:-3px;"></span>

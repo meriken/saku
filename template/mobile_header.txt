@@ -15,8 +15,7 @@ Content-Type: text/html; charset=UTF-8
 
 		<title>{{page_title}}</title>
 
-			<link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
+		<link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 	<style>
 	html {
 		overflow: -moz-scrollbars-vertical; 
@@ -172,7 +171,7 @@ Content-Type: text/html; charset=UTF-8
 
 	.input-wrapper {
 		border: 1px solid lightgrey;
-		border-radius: 4px;
+		border-radius: 0 4px 4px 4px;
 		display: block;
 		margin-bottom: 10px;
 	}

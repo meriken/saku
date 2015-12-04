@@ -300,30 +300,22 @@
 							fadeInBuffer = true;
 							if ($('.slide-content').length > 0)
 								return;
-
-							var res = [];
-							var element = document.elementFromPoint(currentMousePos.x - window.pageXOffset, currentMousePos.y - window.pageYOffset);
-							var tooltipInnerElement = null;
-							while (element && element.tagName != "BODY" && element.tagName != "HTML"){
-								res.push(element);
-								element.style.visibility = "hidden";
+							var keepTooltips = false;
+							$($(":hover").get().reverse()).each(function (index, element) {
 								if ($(element).hasClass('anchor')) {
-									for(var i = 0; i < res.length; i++)
-										res[i].style.visibility = "visible";
-									return;
+									keepTooltips = true;
+									return false;
 								} else if ($(element).hasClass('tooltip-inner')) {
-									for(var i = 0; i < res.length; i++)
-										res[i].style.visibility = "visible";
 									$(element).parent().nextAll('.tooltip').remove();
-									return;
+									keepTooltips = true;
+									return false;
 								} 
-								element = document.elementFromPoint(currentMousePos.x - window.pageXOffset, currentMousePos.y - window.pageYOffset);;
-							}
+							});
 
-							for(var i = 0; i < res.length; i++)
-								res[i].style.visibility = "visible";
-							$('.anchor').tooltip('hide');
-							$('.tooltip').remove();
+							if (!keepTooltips) {
+								$('.anchor').tooltip('hide');
+								$('.tooltip').remove();
+							}
 						}, 250)
 					});
 				});
@@ -379,6 +371,81 @@
 				$('.unicode-emoji').each(function () {
 					$(this).html(emojione.unicodeToImage($(this).text()));
 				});
+
+				// Post Form
+				$("#post-form-tabs > li").click(function () {
+					var prevActiveTabID = $("#post-form-tabs > li.active").attr('id');
+					if ($(this).hasClass("active"))
+						return;
+					$("#post-form-tabs > li").removeClass('active');
+					$(this).addClass("active");	
+					
+					if (prevActiveTabID == 'post-form-emoji-tab') {
+						$("form#postarticle .input-group").hide();
+						$("form#postarticle .emojionearea").hide();
+					} else if (prevActiveTabID == 'post-form-edit-tab') {
+						$("form#postarticle .input-group").hide();
+						$("form#postarticle textarea").hide();
+						$("form#postarticle .emojionearea").hide();
+					} else if (prevActiveTabID == 'post-form-preview-tab') {
+						$("#post-preview").hide();
+					}
+					
+					if ($(this).attr('id') == 'post-form-emoji-tab') {
+						$("form#postarticle .input-group").show();
+						$("form#postarticle textarea").emojioneArea({
+							// options
+							autoHideFilters: false,
+							hideSource: true,
+							shortnames: true,
+							useSprite: false,
+						})[0].emojioneArea.setText($("form#postarticle textarea").val());
+						$("form#postarticle .emojionearea").show();
+					} else if ($(this).attr('id') == 'post-form-edit-tab') {
+						$("form#postarticle .input-group").show();
+						$("form#postarticle textarea").show();
+					} else if ($(this).attr('id') == 'post-form-preview-tab') {
+						$("#post-preview").html('<span class="glyphicon glyphicon-refresh spinning"></span>').show();
+						$.ajax("{{mobile_gateway_cgi}}/thread/{{path|urlencode}}",
+							{
+								method: 'POST',
+								async: true,
+								data: {
+									'ajax': '1',
+									'preview': '1',
+									'body': $("form#postarticle textarea").val(),
+									'name': $("form#postarticle input#name").val(),
+									'mail': $("form#postarticle input#mail").val(),
+								},
+								success: function(data) {
+									$("#post-preview").html(data);
+								},
+								error:  function(result, textStatus, errorThrown){
+									$("#post-preview").html('エラーが発生しました。');
+								},
+								complete: function(result, textStatus) {
+								}
+							});
+					}
+				});
+
+				//  Limit the number of "access_thread_*" cookies
+				$(function () {
+					var cookies = Cookies.get();
+					var keys = [];
+					var maxNum = 100;
+
+					for (name in cookies) {
+						if (/^access_thread_/.test(name) && cookies.hasOwnProperty(name)) {
+							keys[keys.length] = name;
+						}
+					}
+					if (keys.length > maxNum) {
+						keys.sort(function (a, b) { return parseInt(cookies[a]) - parseInt(cookies[b]); });
+						for (i = 0; i < keys.length - maxNum; ++i)
+							Cookies.remove(keys[i]);
+					}
+				});
 			});
 		</script>
 		<script src="/bootstrap/js/bootstrap.min.js"></script>
@@ -388,9 +455,57 @@
 		<script src="/jquery/jquery.hoverIntent.js"></script>
 		<script src="/jquery/jquery.qrcode.min.js"></script>
 		<script src="//cdn.jsdelivr.net/emojione/1.5.2/lib/js/emojione.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/js-cookie/2.0.4/js.cookie.min.js"></script>
 	</body>
 	<link rel="stylesheet" href="/blueimp-gallery/css/blueimp-gallery.min.css">
 	<link rel="stylesheet" href="/bootstrap-image-gallery/css/bootstrap-image-gallery.css">
 	<link rel="stylesheet" href="//cdn.jsdelivr.net/emojione/1.5.2/assets/css/emojione.min.css"/>
-	<style>img.emojione {width: 16px; height:16px;min-width: 16px; min-height:16px;}</style>
+	<link rel="stylesheet" href="/emojionearea/css/emojionearea.css">
+	<style>
+		img.emojione, 
+		.emojionearea .emojionearea-tabs .emojionearea-tab .emojibtn,
+		.emojionearea .emojionearea-tabs .emojionearea-tab .emojibtn img,
+		.emojionearea .emojionearea-editor [class*=emojione-], .emojionearea .emojionearea-editor .emojione {
+			width:16px; height: 16px; min-width: 16px; min-height: 16px;
+		}
+		.emojionearea .emojionearea-filters .emojionearea-filter,
+		.emojionearea .emojionearea-filters .emojionearea-filter img {
+			width:22px; height: 22px; min-width: 22px; min-height: 22px;
+		}
+		.emojionearea .emojionearea-filters .emojionearea-filter
+		{
+			border: 6px solid #e5e5e5;
+		}
+		.emojionearea .emojionearea-filters,
+		.emojionearea .emojionearea-filters .emojionearea-filters-scroll {
+			height: 35px;
+		}
+		.emojionearea, .emojionearea.form-control {
+			border: none;
+			border-radius: 0;
+		}
+		.emojionearea .emojionearea-editor {
+			height: 165px;
+		}
+		#post-preview {
+			height: 303px;
+			padding: 10px;
+			overflow-y: auto;
+		}
+		.glyphicon.spinning {
+			animation: spin 1s infinite linear;
+			-webkit-animation: spin2 1s infinite linear;
+		}
+
+		@keyframes spin {
+			from { transform: scale(1) rotate(0deg); }
+			to { transform: scale(1) rotate(360deg); }
+		}
+
+		@-webkit-keyframes spin2 {
+			from { -webkit-transform: rotate(0deg); }
+			to { -webkit-transform: rotate(360deg); }
+		}
+	</style>
+	<script type="text/javascript" src="/emojionearea/js/emojionearea.js"></script>
 </html>

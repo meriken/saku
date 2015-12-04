@@ -109,6 +109,10 @@ def search_message(accept_language):
 
 # End of search_message
 
+def filter_class(name, value):
+    if name == 'class' and (value in ('codehilite', 'hll', 'err') or re.match('^[a-z][a-z]?$', value)):
+        return True
+    return False
 
 class CGI(basecgi.CGI):
 
@@ -315,7 +319,9 @@ class CGI(basecgi.CGI):
                 # 'markdown.extensions.wikilinks',
             ]
             attrs = {
-                '*': ['class'],
+                # '*': ['class'],
+                'span': filter_class,
+                'div': filter_class,
                 'a': ['href', 'rel'],
                 'img': ['src', 'alt'],
                 'abbr': ['title'],
@@ -341,7 +347,7 @@ class CGI(basecgi.CGI):
             buf = re.sub(r'\[gist:([a-f0-9]+)\]', r'<script src="https://gist.github.com/\1.js"></script>', buf);
             # emojione
             buf = re.sub(u'([\U00002600-\U000027BF]|[\U0001f170-\U0001f251]|[\U0001f300-\U0001f64F]|[\U0001f680-\U0001f6FF])+', r'<span class="unicode-emoji">\g<0></span>', buf)
-            buf = re.sub(r':([a-z_]+|\+1):', r'<span class="emoji" data-shortname=":\1:">:\1:</span>', buf);
+            buf = re.sub(r':([a-z][a-z_0-9]*|\+1|-1|100|1234|8ball):', r'<span class="emoji" data-shortname=":\1:">:\1:</span>', buf);
             #
             buf = re.sub(r"(&gt;&gt;)([0-9a-f]{8})",
                          self.res_anchor(r"\2", appli, title, absuri=absuri) +

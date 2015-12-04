@@ -7,6 +7,18 @@
 		-ms-user-select: all;
 		user-select: all;
 	}
+
+	.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover {
+		border: 1px solid #ddd;
+	}
+
+	.nav-tabs>li>a {
+		color: #888;
+	}
+
+	#postarticle textarea {
+		height: 200px;
+	}
 </style>
 
 <h3><a href="{{mobile_gateway_cgi}}/thread/{{path | urlencode}}" style="color:black;">{{path}}</a></h3>

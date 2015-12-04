@@ -41,7 +41,16 @@
 {% endif %}
 #}
 
-<div id='related_threads' style='display:none;'></div>
+<div id='related_threads' style=''>
+	<div class="list-group" style="margin-top: 10px; margin-bottom: 10px; visibility: visible;">
+	<a class="list-group-item" style="visibility: visible; background: rgb(245, 245, 245);">関連スレッド</a>
+	<a class="list-group-item" style="visibility: visible;"><span class="glyphicon glyphicon-refresh spinning"></span><span class="glyphicon glyphicon-chevron-right pull-right"></span></a>
+	<a class="list-group-item" style="visibility: visible;"><span class="glyphicon glyphicon-refresh spinning"></span><span class="glyphicon glyphicon-chevron-right pull-right"></span></a>
+	<a class="list-group-item" style="visibility: visible;"><span class="glyphicon glyphicon-refresh spinning"></span><span class="glyphicon glyphicon-chevron-right pull-right"></span></a>
+	<a class="list-group-item" style="visibility: visible;"><span class="glyphicon glyphicon-refresh spinning"></span><span class="glyphicon glyphicon-chevron-right pull-right"></span></a>
+	<a class="list-group-item" style="visibility: visible;"><span class="glyphicon glyphicon-refresh spinning"></span><span class="glyphicon glyphicon-chevron-right pull-right"></span></a>
+	</div>
+</div>
 {% endif %}
 
 <form id="postarticle" name="postarticle" method="post" action="{{mobile_gateway_cgi}}" enctype="multipart/form-data" role="form">
@@ -49,10 +58,15 @@
 		<input type="hidden" name="cmd" value="post" />
 		<input type="hidden" name="file" value="{{cache.datfile}}" />
 
+		<ul id="post-form-tabs" class="nav nav-tabs" style="border-bottom: none;">
+			<li id="post-form-edit-tab"    role="presentation" class="active"><a>編集</a></li>
+			<li id="post-form-emoji-tab"   role="presentation"><a>絵文字入力</a></li>
+			<li id="post-form-preview-tab" role="presentation"><a>プレビュー</a></li>
+		</ul>
 		<div class="input-wrapper">
 			<div class="wrapped-input input-group">
 				<span class="no-border input-group-addon" style="border-radius: 4px 0 0 0"><span class="glyphicon glyphicon-user"></span></span>
-				<input style="border-radius: 0 4px 0 0" name="name" value="" id="name" class="no-border form-control" placeholder="{{message.name}}" />
+				<input style="border-radius: 0 4px 0 0" name="name" value="" id="name" class="no-border form-control" placeholder="{{message.name}}"/>
 			</div>
 			<div class="wrapped-input input-group">
 				<span class="no-border input-group-addon"><span class="glyphicon glyphicon-envelope"></span></span>
@@ -72,6 +86,9 @@
 					</span>
 			</div>
 			<textarea rows="5" name="body" id="body" class="no-border wrapped-input form-control" placeholder="{{message.post_body}}">{{post_message}}</textarea>
+			<div id="post-preview" style="display: none;">
+				プレヴュー
+			</div>
 			<div class="form-actions">
 				<button class="btn btn-block btn-primary wrapped-input no-border" style="border-radius: 0 0 4px 4px;">
 					{{message.post}}
