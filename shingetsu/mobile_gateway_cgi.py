@@ -202,7 +202,7 @@ class CGI(mobile_gateway.CGI):
                     self.print_record(cache, rec, path, str_path, False, ajax)
                     found = True
             if found:
-                self.stdout.write("<script>initializeAnchors();</script>")
+                self.stdout.write("<script>updatePosts();</script>")
             else:
                 self.stdout.write("レスが見つかりません")
             return
@@ -218,17 +218,18 @@ class CGI(mobile_gateway.CGI):
             else:
                 rec['body'] = ''
             self.print_record(cache, rec, path, str_path, False, ajax, preview=True)
-            self.stdout.write("<script>initializeAnchors();</script>")
+            self.stdout.write("<script>updatePosts();</script>")
             return
         elif related_threads and ajax:
             related_threads = None;
             if len(cache.tags) > 0 and not id:
                 related_threads = CacheList()
                 try:
-                    related_threads = [x for x in related_threads if ((str(x) != str(cache)) and len(set([str(t).lower() for t in cache.tags]) & set([str(t).lower() for t in x.tags])) > 0  )]
+                    related_threads = [x for x in related_threads if ((str(x) != str(cache)) and len(set([str(t).lower() for t in cache.tags]) & set([str(t).lower() for t in x.tags]) - set({'きれいな新月'})) > 0  )]
                 except ValueError:
                     pass
-                related_threads = random.sample(related_threads, min(5, len(related_threads)))
+                related_threads.sort(key=lambda x: x.valid_stamp, reverse=True)
+                related_threads = related_threads[0:min(5, len(related_threads))]
             var = {
                 'ajax': ajax,
                 'cache': cache,
