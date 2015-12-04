@@ -44,6 +44,11 @@ Content-Type: text/html; charset=UTF-8
 	  word-break: break-all;
 	}
 
+	@media (min-width: 768px) {
+	.container {
+		width: 758px;
+	}
+	}
 	body > .container {
 	  max-width: 640px;
 	  padding: 65px 15px 10px;
