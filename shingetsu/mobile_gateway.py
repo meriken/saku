@@ -328,7 +328,37 @@ class CGI(basecgi.CGI):
             }
             tmp = re.sub('&lt;', '<', m.group(2))
             tmp = re.sub('&gt;', '>', tmp)
-            tmp = bleach.clean(markdown.markdown(tmp, extensions=extensions), attributes=attrs, tags=tags)
+            tmp = re.sub(r'>>([0-9a-f]{8})', '&gt;&gt;\g<1>', tmp)
+            tmp = markdown.markdown(tmp, extensions=extensions)
+
+            buf = re.sub(r"^(.{0,8})(https?://[^\x00-\x20\"'()<>\[\]\x7F-\xFF]{2,})",
+                         r'\g<1><a href="\g<2>">\g<2></a>',
+                         tmp)
+            buf = re.sub(r"(\n.{0,8})(https?://[^\x00-\x20\"'()<>\[\]\x7F-\xFF]{2,})",
+                         r'\g<1><a href="\g<2>">\g<2></a>',
+                         buf)
+            buf = re.sub(r"((?!<a href=\").........)(https?://[^\x00-\x20\"'()<>\[\]\x7F-\xFF]{2,})",
+                         r'\g<1><a href="\g<2>">\g<2></a>',
+                         buf)
+
+            buf = re.sub(r'\[\[<a.*?>(.*?)\]\]</a>', r'[[\1]]', buf)
+
+            tmp = ""
+            while buf:
+                m = re.search(r"\[\[([^<>]+?)\]\]", buf)
+                if m is not None:
+                    tmp += buf[:m.start()]
+                    tmp += self.bracket_link(m.group(1), appli, absuri=absuri)
+                    buf = buf[m.end():]
+                else:
+                    tmp += buf
+                    buf = ""
+
+            tmp = bleach.clean(tmp, attributes=attrs, tags=tags)
+
+            tmp = re.sub(r"(&gt;&gt;)([0-9a-f]{8})",
+                         self.res_anchor(r"\2", appli, title, absuri=absuri) + r"\g<0></a>",
+                         tmp)
         else:
             buf = buf.expandtabs()
             buf = self.escape(buf)
