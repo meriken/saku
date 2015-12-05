@@ -108,7 +108,7 @@
 {% endif %}
 {% if reverse_anchors %}
 		<hr style="margin: 10px 0px 5px;">
-		<div style="text-align:right;">
+		<div style="text-align:left;padding-left:15px;">
 {% for reverse_anchor in reverse_anchors %}
 		<a class="anchor btn btn-default" data-href="{{mobile_gateway_cgi}}/thread/{{str_path}}/{{reverse_anchor}}?ajax=1" data-toggle="tooltip">└{{ reverse_anchor }}</a>
 {% endfor %}
