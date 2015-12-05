@@ -90,7 +90,7 @@
 		<div class="clearfix"></div>
 	</div>
 
-	<div class="panel-body">
+	<div class="panel-body" {% if reverse_anchors %}style="padding-bottom:5px;"{% endif %}>
 {% else %}
 	   </div>
 {% endif %}
@@ -104,6 +104,14 @@
 {% if body != '' %}<br />{% endif %}
 		<div style="overflow: hidden;">
 			<img id="post-{{sid}}-image" class="post-image" src="{{mobile_gateway_cgi}}/thread/{{cache.datfile}}/{{rec.id}}/{{rec.stamp}}.{{suffix}}" style="width:auto;height:auto;max-height:210px;max-width:100%" alt="" style="" />
+		</div>
+{% endif %}
+{% if reverse_anchors %}
+		<hr style="margin: 10px 0px 5px;">
+		<div style="text-align:right;">
+{% for reverse_anchor in reverse_anchors %}
+		<a class="anchor btn btn-default" data-href="{{mobile_gateway_cgi}}/thread/{{str_path}}/{{reverse_anchor}}?ajax=1" data-toggle="tooltip">└{{ reverse_anchor }}</a>
+{% endfor %}
 		</div>
 {% endif %}
 {% if not ajax %}

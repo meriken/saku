@@ -188,10 +188,30 @@ class CGI(mobile_gateway.CGI):
         else:
             self.print404(id=id)
             return
-
+            
         ajax = form.getfirst('ajax')
         preview = form.getfirst('preview')
         related_threads = form.getfirst('related_threads')
+
+        reverse_anchors = {}
+        if not preview:
+            for rec in cache:
+                if rec.load_body() and ('body' in rec):
+                    body = rec['body']
+                    if re.match(r'&gt;&gt;[0-9a-f]{8}', body):
+                        sid = rec.id[0:8]
+                        body = re.sub(r'^.*?(&gt;&gt;[0-9a-f]{8})', r'\g<1>', body)
+                        body = re.sub(r'^(.*&gt;&gt;[0-9a-f]{8}).*?$', r'\g<1>', body)
+                        while re.match(r'(&gt;&gt;[0-9a-f]{8}).+?(&gt;&gt;[0-9a-f]{8})', body):
+                            body = re.sub(r'(&gt;&gt;[0-9a-f]{8}).+?(&gt;&gt;[0-9a-f]{8})', r'\g<1>\g<2>', body)
+                        body = re.sub(r'^&gt;&gt;', r'', body)
+                        body = re.sub(r'&gt;&gt;', r',', body)
+                        for dest in body.split(','):
+                            if not dest in reverse_anchors:
+                                reverse_anchors[dest] = [ sid ]
+                            elif not (sid in reverse_anchors[dest]):
+                                reverse_anchors[dest].append(sid)
+
         if id and ajax:
             self.stdout.write("Content-Type: text/html; charset=UTF-8\n\n");
     
@@ -199,7 +219,7 @@ class CGI(mobile_gateway.CGI):
             for k in list(cache.keys()):
                 rec = cache[k]
                 if ((not id) or (rec.id[:8] == id)) and rec.load_body():
-                    self.print_record(cache, rec, path, str_path, False, ajax)
+                    self.print_record(cache, rec, path, str_path, False, ajax, reverse_anchors=reverse_anchors)
                     found = True
             if found:
                 self.stdout.write("<script>updatePosts();</script>")
@@ -286,6 +306,25 @@ class CGI(mobile_gateway.CGI):
         self.stdout.write(self.template('mobile_thread_header', var))
         #self.print_page_navi(page, cache, path, str_path, id)
         #self.stdout.write('</p>\n<dl id="records">\n')
+
+        reverse_anchors = {}
+        for rec in cache:
+            if rec.load_body() and ('body' in rec):
+                body = rec['body']
+                if re.match(r'&gt;&gt;[0-9a-f]{8}', body):
+                    sid = rec.id[0:8]
+                    body = re.sub(r'^.*?(&gt;&gt;[0-9a-f]{8})', r'\g<1>', body)
+                    body = re.sub(r'^(.*&gt;&gt;[0-9a-f]{8}).*?$', r'\g<1>', body)
+                    while re.match(r'(&gt;&gt;[0-9a-f]{8}).+?(&gt;&gt;[0-9a-f]{8})', body):
+                        body = re.sub(r'(&gt;&gt;[0-9a-f]{8}).+?(&gt;&gt;[0-9a-f]{8})', r'\g<1>\g<2>', body)
+                    body = re.sub(r'^&gt;&gt;', r'', body)
+                    body = re.sub(r'&gt;&gt;', r',', body)
+                    for dest in body.split(','):
+                        if not dest in reverse_anchors:
+                            reverse_anchors[dest] = [ sid ]
+                        elif not (sid in reverse_anchors[dest]):
+                            reverse_anchors[dest].append(sid)
+            
         if id:
             inrange = ids
         elif page:
@@ -309,7 +348,7 @@ class CGI(mobile_gateway.CGI):
                 new_record = True
                 if (access and access >= rec.stamp) or id or page != 0:
                     new_record = False
-                self.print_record(cache, rec, path, str_path, new_record, False)
+                self.print_record(cache, rec, path, str_path, new_record, False, reverse_anchors=reverse_anchors)
                 printed = True
             rec.free()
             ad_position = ad_position + 1
@@ -374,7 +413,7 @@ class CGI(mobile_gateway.CGI):
         cookie['access_new_posts']['expires'] = expires
         return cookie
 
-    def print_record(self, cache, rec, path, str_path, new_record, ajax, preview=False):
+    def print_record(self, cache, rec, path, str_path, new_record, ajax, preview=False, reverse_anchors=None):
         thumbnail_size = None
         if 'attach' in rec:
             attach_file = rec.attach_path()
@@ -396,11 +435,15 @@ class CGI(mobile_gateway.CGI):
         else:
             body = ''
         body = self.html_format(body, self.mobile_gateway_cgi + self.sep + 'thread', path)
+        reverse_anchors_for_post = None
+        sid = rec['id'][:8]
+        if reverse_anchors and sid in reverse_anchors:
+            reverse_anchors_for_post = reverse_anchors[sid]
         var = {
             'ajax': ajax,
             'cache': cache,
             'rec': rec,
-            'sid': rec['id'][:8],
+            'sid': sid,
             'path': path,
             'str_path': str_path,
             'attach_file': attach_file,
@@ -411,6 +454,7 @@ class CGI(mobile_gateway.CGI):
             'thumbnail': thumbnail_size,
             'new_record': new_record,
             'preview': preview,
+            'reverse_anchors': reverse_anchors_for_post,
         }
         self.stdout.write(self.template('mobile_record', var))
 
@@ -568,6 +612,24 @@ class CGI(mobile_gateway.CGI):
                 access_thread = int(cookie['access_' + file_path].value)
 
             if access_thread > 0 and cache.valid_stamp + config.rss_range >= now and access < cache.valid_stamp and access_thread < cache.valid_stamp:
+                reverse_anchors = {}
+                for rec in cache:
+                    if rec.load_body() and ('body' in rec):
+                        body = rec['body']
+                        if re.match(r'&gt;&gt;[0-9a-f]{8}', body):
+                            sid = rec.id[0:8]
+                            body = re.sub(r'^.*?(&gt;&gt;[0-9a-f]{8})', r'\g<1>', body)
+                            body = re.sub(r'^(.*&gt;&gt;[0-9a-f]{8}).*?$', r'\g<1>', body)
+                            while re.match(r'(&gt;&gt;[0-9a-f]{8}).+?(&gt;&gt;[0-9a-f]{8})', body):
+                                body = re.sub(r'(&gt;&gt;[0-9a-f]{8}).+?(&gt;&gt;[0-9a-f]{8})', r'\g<1>\g<2>', body)
+                            body = re.sub(r'^&gt;&gt;', r'', body)
+                            body = re.sub(r'&gt;&gt;', r',', body)
+                            for dest in body.split(','):
+                                if not dest in reverse_anchors:
+                                    reverse_anchors[dest] = [ sid ]
+                                elif not (sid in reverse_anchors[dest]):
+                                    reverse_anchors[dest].append(sid)
+
                 str_path = self.str_encode(title)
                 self.stdout.write('<div class="panel panel-info">');
                 self.stdout.write('<div class="panel-heading" style="color:black;"><h4 style="margin:0">');
@@ -582,7 +644,7 @@ class CGI(mobile_gateway.CGI):
                     content = self.rss_html_format(r.get("body", ""),
                                                    self.appli[cache.type],
                                                    title)
-                    self.print_record(cache, r, title, str_path, False, False)
+                    self.print_record(cache, r, title, str_path, False, False, reverse_anchors=reverse_anchors)
                     new_posts_count = new_posts_count + 1
                     r.free()
                 self.stdout.write("</div></div>");
