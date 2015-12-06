@@ -189,6 +189,7 @@ class CGI(mobile_gateway.CGI):
             self.print404(id=id)
             return
             
+        popup = form.getfirst('popup')
         ajax = form.getfirst('ajax')
         preview = form.getfirst('preview')
         related_threads = form.getfirst('related_threads')
@@ -200,32 +201,34 @@ class CGI(mobile_gateway.CGI):
                     body = rec['body']
                     if re.match(r'&gt;&gt;[0-9a-f]{8}', body):
                         sid = rec.id[0:8]
-                        body = re.sub(r'^.*?(&gt;&gt;[0-9a-f]{8})', r'\g<1>', body)
-                        body = re.sub(r'^(.*&gt;&gt;[0-9a-f]{8}).*?$', r'\g<1>', body)
-                        while re.match(r'(&gt;&gt;[0-9a-f]{8}).+?(&gt;&gt;[0-9a-f]{8})', body):
-                            body = re.sub(r'(&gt;&gt;[0-9a-f]{8}).+?(&gt;&gt;[0-9a-f]{8})', r'\g<1>\g<2>', body)
-                        body = re.sub(r'^&gt;&gt;', r'', body)
-                        body = re.sub(r'&gt;&gt;', r',', body)
-                        for dest in body.split(','):
+                        for dest in re.compile('&gt;&gt;[0-9a-f]{8}').findall(body):
+                            dest = re.sub(r'^&gt;&gt;', r'', dest)
                             if not dest in reverse_anchors:
                                 reverse_anchors[dest] = [ sid ]
                             elif not (sid in reverse_anchors[dest]):
                                 reverse_anchors[dest].append(sid)
 
-        if id and ajax:
-            self.stdout.write("Content-Type: text/html; charset=UTF-8\n\n");
-    
-            found = False
-            for k in list(cache.keys()):
-                rec = cache[k]
-                if ((not id) or (rec.id[:8] == id)) and rec.load_body():
-                    self.print_record(cache, rec, path, str_path, False, ajax, reverse_anchors=reverse_anchors)
-                    found = True
-            if found:
-                self.stdout.write("<script>updatePosts();</script>")
+        if (id or popup) and ajax:
+            self.stdout.write("Content-Type: application/json; charset=UTF-8\n\n");
+            if id:
+                sids = [ id ]
             else:
-                self.stdout.write("レスが見つかりません")
+                sids = popup.split(',')
+            found = False
+            self.stdout.write("{ \"popups\": [\n");
+            first = True
+            for k in cache.keys():
+                rec = cache[k]
+                if rec['id'][:8] in sids:
+                    if not first:
+                        self.stdout.write(',\n');
+                    self.stdout.write('{"sid": "' + rec['id'][:8] + '", "html": "');
+                    self.print_record(cache, rec, path, str_path, False, ajax, reverse_anchors=reverse_anchors, json=True)
+                    self.stdout.write('"}');
+                    first = False
+            self.stdout.write("\n]}");
             return
+ 
         elif preview and ajax:
             self.stdout.write("Content-Type: text/html; charset=UTF-8\n\n");
             rec = Record()
@@ -248,8 +251,9 @@ class CGI(mobile_gateway.CGI):
                     related_threads = [x for x in related_threads if ((str(x) != str(cache)) and len(set([str(t).lower() for t in cache.tags]) & set([str(t).lower() for t in x.tags]) - set({'きれいな新月'})) > 0  )]
                 except ValueError:
                     pass
-                related_threads.sort(key=lambda x: x.valid_stamp, reverse=True)
-                related_threads = related_threads[0:min(5, len(related_threads))]
+                related_threads = random.sample(related_threads, min(5, len(related_threads)))
+                #related_threads.sort(key=lambda x: x.valid_stamp, reverse=True)
+                #related_threads = related_threads[0:min(5, len(related_threads))]
             var = {
                 'ajax': ajax,
                 'cache': cache,
@@ -307,24 +311,6 @@ class CGI(mobile_gateway.CGI):
         #self.print_page_navi(page, cache, path, str_path, id)
         #self.stdout.write('</p>\n<dl id="records">\n')
 
-        reverse_anchors = {}
-        for rec in cache:
-            if rec.load_body() and ('body' in rec):
-                body = rec['body']
-                if re.match(r'&gt;&gt;[0-9a-f]{8}', body):
-                    sid = rec.id[0:8]
-                    body = re.sub(r'^.*?(&gt;&gt;[0-9a-f]{8})', r'\g<1>', body)
-                    body = re.sub(r'^(.*&gt;&gt;[0-9a-f]{8}).*?$', r'\g<1>', body)
-                    while re.match(r'(&gt;&gt;[0-9a-f]{8}).+?(&gt;&gt;[0-9a-f]{8})', body):
-                        body = re.sub(r'(&gt;&gt;[0-9a-f]{8}).+?(&gt;&gt;[0-9a-f]{8})', r'\g<1>\g<2>', body)
-                    body = re.sub(r'^&gt;&gt;', r'', body)
-                    body = re.sub(r'&gt;&gt;', r',', body)
-                    for dest in body.split(','):
-                        if not dest in reverse_anchors:
-                            reverse_anchors[dest] = [ sid ]
-                        elif not (sid in reverse_anchors[dest]):
-                            reverse_anchors[dest].append(sid)
-            
         if id:
             inrange = ids
         elif page:
@@ -413,7 +399,7 @@ class CGI(mobile_gateway.CGI):
         cookie['access_new_posts']['expires'] = expires
         return cookie
 
-    def print_record(self, cache, rec, path, str_path, new_record, ajax, preview=False, reverse_anchors=None):
+    def print_record(self, cache, rec, path, str_path, new_record, ajax, preview=False, reverse_anchors=None, json=False):
         thumbnail_size = None
         if 'attach' in rec:
             attach_file = rec.attach_path()
@@ -456,7 +442,10 @@ class CGI(mobile_gateway.CGI):
             'preview': preview,
             'reverse_anchors': reverse_anchors_for_post,
         }
-        self.stdout.write(self.template('mobile_record', var))
+        output = self.template('mobile_record', var)
+        if json:
+            output = output.replace('"', '\\"').replace('\n', ' ').replace('\t', '\\t')
+        self.stdout.write(output)
 
     def print_attach(self, datfile, id, stamp, suffix, thumbnail_size=None):
         """Print attachment."""
@@ -618,13 +607,8 @@ class CGI(mobile_gateway.CGI):
                         body = rec['body']
                         if re.match(r'&gt;&gt;[0-9a-f]{8}', body):
                             sid = rec.id[0:8]
-                            body = re.sub(r'^.*?(&gt;&gt;[0-9a-f]{8})', r'\g<1>', body)
-                            body = re.sub(r'^(.*&gt;&gt;[0-9a-f]{8}).*?$', r'\g<1>', body)
-                            while re.match(r'(&gt;&gt;[0-9a-f]{8}).+?(&gt;&gt;[0-9a-f]{8})', body):
-                                body = re.sub(r'(&gt;&gt;[0-9a-f]{8}).+?(&gt;&gt;[0-9a-f]{8})', r'\g<1>\g<2>', body)
-                            body = re.sub(r'^&gt;&gt;', r'', body)
-                            body = re.sub(r'&gt;&gt;', r',', body)
-                            for dest in body.split(','):
+                            for dest in re.compile('&gt;&gt;[0-9a-f]{8}').findall(body):
+                                dest = re.sub(r'^&gt;&gt;', r'', dest)
                                 if not dest in reverse_anchors:
                                     reverse_anchors[dest] = [ sid ]
                                 elif not (sid in reverse_anchors[dest]):

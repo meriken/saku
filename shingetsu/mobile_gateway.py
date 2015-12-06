@@ -290,15 +290,15 @@ class CGI(basecgi.CGI):
                              time.gmtime(int(stamp)))
 
     def res_anchor(self, id, appli, title, absuri=False):
-        title = self.str_encode(title)
+        str_title = self.str_encode(title)
         if absuri:
             prefix = 'http://' + self.host
             innerlink = ''
         else:
             prefix = ''
             innerlink = 'innerlink'
-        return '<a class="anchor btn btn-default white-tooltip %s" data-href="%s%s%s%s/%s?ajax=1" data-toggle="tooltip">' % \
-               (innerlink, prefix, appli, self.sep, title, id)
+        return '<a class="anchor btn btn-default white-tooltip %s" data-str-title="%s" data-sid="%s" data-toggle="tooltip">' % \
+               (innerlink, str_title, id)
 
     def html_format(self, plain, appli, title, absuri=False):
         buf = plain.replace("<br>", "\n")

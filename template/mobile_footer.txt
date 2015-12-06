@@ -206,27 +206,27 @@
 			});
 {% endif %}
 			var cachedData = Array();
-			function anchorHoverGetData(element) {
-				var showTooltip = false;
-				if (typeof element == 'undefined') {
-					element = this;
-					showTooltip = true;
-				}
+			function anchorHoverGetData() {
+				var element = this;
+				var sid = $(element).attr('data-sid');
+				var href = '{{mobile_gateway_cgi}}/thread/' + $(element).attr('data-str-title') + '?ajax=1&popup=' + sid;
 				
-				var href = $(element).attr('data-href');
-
 				if(href in cachedData)
 					return cachedData[href];
 				$.ajax(href, {
-					async: !showTooltip,
+					async: false,
 					success: function(data) {
-						if (typeof cachedData[href] == 'undefined')
-							cachedData[href] = data;
-						if (showTooltip) {
-							$(element).data('tooltip',false)
-										.tooltip({ trigger: 'manual',	title: data, html: true, container: 'body', placement: 'bottom' })
-										.tooltip('show');
+						// console.log(data['popups'][0]);
+						if (typeof cachedData[href] == 'undefined') {
+							if (data['popups'].length <= 0)
+								cachedData[href] = 'レスが見つかりません。';
+							else
+								cachedData[href] = data['popups'][0]['html'];
 						}
+						$(element).data('tooltip',false)
+									.tooltip({ trigger: 'manual',	title: data, html: true, container: 'body', placement: 'bottom' })
+									.tooltip('show');
+						updatePosts();
 					}
 				});
 				return cachedData[href];
@@ -251,7 +251,7 @@
 					.bind("touchstart", function (e) { e.stopPropagation(); })
 					.bind("touchend", function (e) { e.stopPropagation(); })
 					.click(function (e) { e.stopPropagation(); $(this).tooltip('toggle'); })
-					.hoverIntent(function (e) { if ($('#' + $(this).attr('aria-describedby')).length <= 0) $(this).tooltip('show'); }, function (e) {})
+					.hoverIntent(function (e) { if ($('#' + $(this).attr('aria-describedby')).length <= 0) $(this).tooltip('show'); updatePosts(); }, function (e) {})
 					.on('hide.bs.tooltip', function () {
 						$('#' + $(this).attr('aria-describedby')).nextAll('.tooltip').remove();
 					})
@@ -267,10 +267,39 @@
 					.bind("touchstart", function (e) { e.stopPropagation(); })
 					.bind("touchend", function (e) { e.stopPropagation(); })
 					.click(function (e) { e.stopPropagation(); });
+
+				var popup = "";
+				var strTitle = "";
 				$(".anchor").each(function( index, element ) {
-					anchorHoverGetData(element);
+					var sid = $(element).attr('data-sid');
+					if (typeof cachedData[sid] == 'undefined') {
+						if (popup.length > 0 && strTitle != "" && strTitle != $(element).attr('data-str-title')) {
+							$.ajax('{{mobile_gateway_cgi}}/thread/' + strTitle + '?ajax=1&popup=' + popup, {
+								async: true,
+								success: function(data) { $.each(data['popups'], function (index, element) {
+										cachedData['{{mobile_gateway_cgi}}/thread/' + strTitle + '?ajax=1&popup=' + element['sid']] = element['html'];
+									});
+								}
+							});
+							popup = "";
+						}
+						//
+						if (popup.length > 0)
+							popup = popup + ',';
+						popup = popup + sid;
+						strTitle = $(element).attr('data-str-title');
+					}
 					return true;
 				});
+				if (popup.length > 0) {
+					$.ajax('{{mobile_gateway_cgi}}/thread/' + strTitle + '?ajax=1&popup=' + popup, {
+						async: true,
+						success: function(data) { $.each(data['popups'], function (index, element) {
+								cachedData['{{mobile_gateway_cgi}}/thread/' + strTitle + '?ajax=1&popup=' + element['sid']] = element['html'];
+							});
+						}
+					});
+				}
 			}
 
 			function displayEmojis() {
@@ -377,7 +406,6 @@
 					$.ajax('{{mobile_gateway_cgi}}/check-for-new-posts', {
 						async: true,
 						success: function(data) {
-							console.log(data);
 							$('.new-post-notification-area, .navbar button.navbar-toggle.collapsed').css('background-color', data.toString() == 'YES' ? '#fee' : '')
 							setTimeout(checkForNewPosts, 60 * 1000)
 						}
