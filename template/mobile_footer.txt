@@ -274,10 +274,11 @@
 					var sid = $(element).attr('data-sid');
 					if (typeof cachedData[sid] == 'undefined') {
 						if (popup.length > 0 && strTitle != "" && strTitle != $(element).attr('data-str-title')) {
-							$.ajax('{{mobile_gateway_cgi}}/thread/' + strTitle + '?ajax=1&popup=' + popup, {
+							var ajaxStrTitle = strTitle;
+							$.ajax('{{mobile_gateway_cgi}}/thread/' + ajaxStrTitle + '?ajax=1&popup=' + popup, {
 								async: true,
 								success: function(data) { $.each(data['popups'], function (index, element) {
-										cachedData['{{mobile_gateway_cgi}}/thread/' + strTitle + '?ajax=1&popup=' + element['sid']] = element['html'];
+										cachedData['{{mobile_gateway_cgi}}/thread/' + ajaxStrTitle + '?ajax=1&popup=' + element['sid']] = element['html'];
 									});
 								}
 							});
