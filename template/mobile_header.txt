@@ -258,7 +258,7 @@ Content-Type: text/html; charset=UTF-8
 		border-left: 3px solid #eee;
 	}
 </style>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
   </head>
 
   <body>

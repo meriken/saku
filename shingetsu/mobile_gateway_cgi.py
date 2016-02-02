@@ -199,14 +199,14 @@ class CGI(mobile_gateway.CGI):
             for rec in cache:
                 if rec.load_body() and ('body' in rec):
                     body = rec['body']
-                    if re.match(r'&gt;&gt;[0-9a-f]{8}', body):
-                        sid = rec.id[0:8]
-                        for dest in re.compile('&gt;&gt;[0-9a-f]{8}').findall(body):
-                            dest = re.sub(r'^&gt;&gt;', r'', dest)
-                            if not dest in reverse_anchors:
-                                reverse_anchors[dest] = [ sid ]
-                            elif not (sid in reverse_anchors[dest]):
-                                reverse_anchors[dest].append(sid)
+                    sid = rec.id[0:8]
+                    for dest in re.compile('&gt;&gt;[0-9a-f]{8}').findall(body):
+                        self.stderr.write(dest + "\n")
+                        dest = re.sub(r'^&gt;&gt;', r'', dest)
+                        if not dest in reverse_anchors:
+                            reverse_anchors[dest] = [ sid ]
+                        elif not (sid in reverse_anchors[dest]):
+                            reverse_anchors[dest].append(sid)
 
         if (id or popup) and ajax:
             self.stdout.write("Content-Type: application/json; charset=UTF-8\n\n");
@@ -605,14 +605,13 @@ class CGI(mobile_gateway.CGI):
                 for rec in cache:
                     if rec.load_body() and ('body' in rec):
                         body = rec['body']
-                        if re.match(r'&gt;&gt;[0-9a-f]{8}', body):
-                            sid = rec.id[0:8]
-                            for dest in re.compile('&gt;&gt;[0-9a-f]{8}').findall(body):
-                                dest = re.sub(r'^&gt;&gt;', r'', dest)
-                                if not dest in reverse_anchors:
-                                    reverse_anchors[dest] = [ sid ]
-                                elif not (sid in reverse_anchors[dest]):
-                                    reverse_anchors[dest].append(sid)
+                        sid = rec.id[0:8]
+                        for dest in re.compile('&gt;&gt;[0-9a-f]{8}').findall(body):
+                            dest = re.sub(r'^&gt;&gt;', r'', dest)
+                            if not dest in reverse_anchors:
+                                reverse_anchors[dest] = [ sid ]
+                            elif not (sid in reverse_anchors[dest]):
+                                reverse_anchors[dest].append(sid)
 
                 str_path = self.str_encode(title)
                 self.stdout.write('<div class="panel panel-info">');
